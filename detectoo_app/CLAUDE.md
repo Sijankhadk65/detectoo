@@ -30,6 +30,10 @@ flutter analyze
 
 - Always add documentation comments (`///`) to new functions and classes
 
+## Design
+
+See [DESIGN.md](DESIGN.md) for UI/design guidelines (typography, color palette, component style, and general look & feel).
+
 ## Architecture
 
 The app is currently a default Flutter starter. Architecture will evolve as features are added.
