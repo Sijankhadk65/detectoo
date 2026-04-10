@@ -1,7 +1,19 @@
-/// Represents a plant care task/todo item.
-class Task {
-  final String title;
-  final bool done;
+import 'package:built_value/built_value.dart';
+import 'package:built_value/serializer.dart';
 
-  const Task({required this.title, required this.done});
+part 'task.g.dart';
+
+/// Represents a plant care task/todo item.
+abstract class Task implements Built<Task, TaskBuilder> {
+  /// The task description.
+  String get title;
+
+  /// Whether the task has been completed.
+  bool get done;
+
+  Task._();
+
+  factory Task([void Function(TaskBuilder) updates]) = _$Task;
+
+  static Serializer<Task> get serializer => _$taskSerializer;
 }

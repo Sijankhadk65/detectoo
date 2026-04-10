@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Detectoo is a monorepo with two sub-projects:
 - **`detectoo_backend/`** — FastAPI backend (Python 3.11+, based on Benav Labs FastAPI boilerplate)
-- **`detectoo_app/`** — Flutter mobile/web/desktop app (Dart SDK ^3.11.4)
+- **`detectoo_app/`** — Flutter mobile/web/desktop app (Dart SDK ^3.11.4, Riverpod, built_value)
 
 Each sub-project has its own CLAUDE.md with detailed commands, architecture, and conventions.
 

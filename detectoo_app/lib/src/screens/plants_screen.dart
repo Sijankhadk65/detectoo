@@ -18,48 +18,41 @@ class PlantsScreen extends StatelessWidget {
 
     // TODO: Replace with actual plant data.
     final plants = [
-      const Plant(
-        name: 'Monstera',
-        icon: Icons.yard_rounded,
-        healthStatus: PlantHealthStatus.healthy,
-        lastWatered: '2 hours ago',
-      ),
-      const Plant(
-        name: 'Snake Plant',
-        icon: Icons.grass_rounded,
-        healthStatus: PlantHealthStatus.healthy,
-        lastWatered: 'Yesterday',
-      ),
-      const Plant(
-        name: 'Rose Bush',
-        icon: Icons.local_florist_rounded,
-        healthStatus: PlantHealthStatus.recovering,
-        lastWatered: '3 days ago',
-      ),
-      const Plant(
-        name: 'Fiddle Leaf Fig',
-        icon: Icons.park_rounded,
-        healthStatus: PlantHealthStatus.needsAttention,
-        lastWatered: '5 days ago',
-      ),
-      const Plant(
-        name: 'Aloe Vera',
-        icon: Icons.eco_rounded,
-        healthStatus: PlantHealthStatus.healthy,
-        lastWatered: '1 day ago',
-      ),
-      const Plant(
-        name: 'Tomato Plant',
-        icon: Icons.filter_vintage_rounded,
-        healthStatus: PlantHealthStatus.recovering,
-        lastWatered: '4 days ago',
-      ),
-      const Plant(
-        name: 'Basil',
-        icon: Icons.spa_rounded,
-        healthStatus: PlantHealthStatus.needsAttention,
-        lastWatered: '6 days ago',
-      ),
+      Plant((b) => b
+        ..name = 'Monstera'
+        ..iconCodePoint = Icons.yard_rounded.codePoint
+        ..healthStatus = PlantHealthStatus.healthy
+        ..lastWatered = '2 hours ago'),
+      Plant((b) => b
+        ..name = 'Snake Plant'
+        ..iconCodePoint = Icons.grass_rounded.codePoint
+        ..healthStatus = PlantHealthStatus.healthy
+        ..lastWatered = 'Yesterday'),
+      Plant((b) => b
+        ..name = 'Rose Bush'
+        ..iconCodePoint = Icons.local_florist_rounded.codePoint
+        ..healthStatus = PlantHealthStatus.recovering
+        ..lastWatered = '3 days ago'),
+      Plant((b) => b
+        ..name = 'Fiddle Leaf Fig'
+        ..iconCodePoint = Icons.park_rounded.codePoint
+        ..healthStatus = PlantHealthStatus.needsAttention
+        ..lastWatered = '5 days ago'),
+      Plant((b) => b
+        ..name = 'Aloe Vera'
+        ..iconCodePoint = Icons.eco_rounded.codePoint
+        ..healthStatus = PlantHealthStatus.healthy
+        ..lastWatered = '1 day ago'),
+      Plant((b) => b
+        ..name = 'Tomato Plant'
+        ..iconCodePoint = Icons.filter_vintage_rounded.codePoint
+        ..healthStatus = PlantHealthStatus.recovering
+        ..lastWatered = '4 days ago'),
+      Plant((b) => b
+        ..name = 'Basil'
+        ..iconCodePoint = Icons.spa_rounded.codePoint
+        ..healthStatus = PlantHealthStatus.needsAttention
+        ..lastWatered = '6 days ago'),
     ];
 
     return Scaffold(
@@ -207,7 +200,7 @@ class PlantsScreen extends StatelessWidget {
               color: colorScheme.primaryContainer.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(plant.icon, size: 26, color: colorScheme.primary),
+            child: Icon(plant.iconData, size: 26, color: colorScheme.primary),
           ),
           const SizedBox(width: 16),
           Expanded(

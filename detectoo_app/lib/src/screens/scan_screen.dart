@@ -573,31 +573,28 @@ class _ScanScreenState extends State<ScanScreen> {
       if (!mounted) return;
       setState(() {
         _stage = _ScanStage.results;
-        _result = const ScanResult(
-          plantName: 'Rose Bush',
-          species: 'Rosa gallica',
-          isHealthy: false,
-          issues: [
-            DetectedIssue(
-              name: 'Black Spot Fungus',
-              description:
+        _result = ScanResult((b) => b
+          ..plantName = 'Rose Bush'
+          ..species = 'Rosa gallica'
+          ..isHealthy = false
+          ..issues.addAll([
+            DetectedIssue((b) => b
+              ..name = 'Black Spot Fungus'
+              ..description =
                   'Dark spots found on the leaves. This is a common fungal '
                   'infection that spreads through water. Affected leaves may '
-                  'turn yellow and drop off if not treated.',
-              severity: 'Moderate',
-              confidence: 0.92,
-            ),
-            DetectedIssue(
-              name: 'Aphid Infestation',
-              description:
+                  'turn yellow and drop off if not treated.'
+              ..severity = 'Moderate'
+              ..confidence = 0.92),
+            DetectedIssue((b) => b
+              ..name = 'Aphid Infestation'
+              ..description =
                   'Small green insects found on the underside of leaves. '
                   'They suck sap from the plant and can cause leaves to curl '
-                  'and become distorted. Usually treatable with simple methods.',
-              severity: 'Mild',
-              confidence: 0.85,
-            ),
-          ],
-        );
+                  'and become distorted. Usually treatable with simple methods.'
+              ..severity = 'Mild'
+              ..confidence = 0.85),
+          ]));
       });
     });
   }

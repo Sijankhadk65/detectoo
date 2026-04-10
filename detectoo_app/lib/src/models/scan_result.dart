@@ -1,29 +1,49 @@
-/// Represents the result of a plant scan.
-class ScanResult {
-  final String plantName;
-  final String species;
-  final bool isHealthy;
-  final List<DetectedIssue> issues;
+import 'package:built_collection/built_collection.dart';
+import 'package:built_value/built_value.dart';
+import 'package:built_value/serializer.dart';
 
-  const ScanResult({
-    required this.plantName,
-    required this.species,
-    required this.isHealthy,
-    required this.issues,
-  });
+part 'scan_result.g.dart';
+
+/// Represents the result of a plant scan.
+abstract class ScanResult implements Built<ScanResult, ScanResultBuilder> {
+  /// The identified plant name.
+  String get plantName;
+
+  /// The scientific species name.
+  String get species;
+
+  /// Whether the plant was found to be healthy.
+  bool get isHealthy;
+
+  /// List of detected issues, if any.
+  BuiltList<DetectedIssue> get issues;
+
+  ScanResult._();
+
+  factory ScanResult([void Function(ScanResultBuilder) updates]) = _$ScanResult;
+
+  static Serializer<ScanResult> get serializer => _$scanResultSerializer;
 }
 
 /// A single issue detected during a plant scan.
-class DetectedIssue {
-  final String name;
-  final String description;
-  final String severity;
-  final double confidence;
+abstract class DetectedIssue
+    implements Built<DetectedIssue, DetectedIssueBuilder> {
+  /// The name of the detected issue.
+  String get name;
 
-  const DetectedIssue({
-    required this.name,
-    required this.description,
-    required this.severity,
-    required this.confidence,
-  });
+  /// A detailed description of the issue.
+  String get description;
+
+  /// Severity level (e.g. "Mild", "Moderate", "Severe").
+  String get severity;
+
+  /// Detection confidence as a value between 0.0 and 1.0.
+  double get confidence;
+
+  DetectedIssue._();
+
+  factory DetectedIssue([void Function(DetectedIssueBuilder) updates]) =
+      _$DetectedIssue;
+
+  static Serializer<DetectedIssue> get serializer => _$detectedIssueSerializer;
 }

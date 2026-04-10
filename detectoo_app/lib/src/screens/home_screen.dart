@@ -106,21 +106,18 @@ class HomeScreen extends StatelessWidget {
   Widget _buildReminders(ColorScheme colorScheme) {
     // TODO: Replace with actual reminder data.
     final reminders = [
-      Reminder(
-        title: 'Water the Monstera',
-        time: 'Today, 8:00 AM',
-        icon: Icons.water_drop_outlined,
-      ),
-      Reminder(
-        title: 'Move Fern to shade',
-        time: 'Today, 12:00 PM',
-        icon: Icons.wb_shade_outlined,
-      ),
-      Reminder(
-        title: 'Fertilize Aloe Vera',
-        time: 'Tomorrow, 9:00 AM',
-        icon: Icons.science_outlined,
-      ),
+      Reminder((b) => b
+        ..title = 'Water the Monstera'
+        ..time = 'Today, 8:00 AM'
+        ..iconCodePoint = Icons.water_drop_outlined.codePoint),
+      Reminder((b) => b
+        ..title = 'Move Fern to shade'
+        ..time = 'Today, 12:00 PM'
+        ..iconCodePoint = Icons.wb_shade_outlined.codePoint),
+      Reminder((b) => b
+        ..title = 'Fertilize Aloe Vera'
+        ..time = 'Tomorrow, 9:00 AM'
+        ..iconCodePoint = Icons.science_outlined.codePoint),
     ];
 
     return Column(
@@ -135,7 +132,7 @@ class HomeScreen extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       child: Row(
         children: [
-          IconBadge(icon: reminder.icon),
+          IconBadge(icon: reminder.iconData),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
@@ -173,10 +170,10 @@ class HomeScreen extends StatelessWidget {
   Widget _buildTasks(ColorScheme colorScheme) {
     // TODO: Replace with actual task data.
     final tasks = [
-      Task(title: 'Repot the Snake Plant', done: false),
-      Task(title: 'Buy potting soil', done: true),
-      Task(title: 'Prune dead leaves on Pothos', done: false),
-      Task(title: 'Check soil pH for Roses', done: false),
+      Task((b) => b..title = 'Repot the Snake Plant'..done = false),
+      Task((b) => b..title = 'Buy potting soil'..done = true),
+      Task((b) => b..title = 'Prune dead leaves on Pothos'..done = false),
+      Task((b) => b..title = 'Check soil pH for Roses'..done = false),
     ];
 
     return Column(
@@ -230,24 +227,21 @@ class HomeScreen extends StatelessWidget {
   Widget _buildRecoveryStatus(ColorScheme colorScheme) {
     // TODO: Replace with actual recovery data.
     final recoveries = [
-      Recovery(
-        plantName: 'Rose Bush',
-        condition: 'Black Spot Fungus',
-        progress: 0.7,
-        status: 'Recovering',
-      ),
-      Recovery(
-        plantName: 'Tomato Plant',
-        condition: 'Leaf Blight',
-        progress: 0.3,
-        status: 'Treatment Started',
-      ),
-      Recovery(
-        plantName: 'Basil',
-        condition: 'Root Rot',
-        progress: 0.9,
-        status: 'Almost Healthy',
-      ),
+      Recovery((b) => b
+        ..plantName = 'Rose Bush'
+        ..condition = 'Black Spot Fungus'
+        ..progress = 0.7
+        ..status = 'Recovering'),
+      Recovery((b) => b
+        ..plantName = 'Tomato Plant'
+        ..condition = 'Leaf Blight'
+        ..progress = 0.3
+        ..status = 'Treatment Started'),
+      Recovery((b) => b
+        ..plantName = 'Basil'
+        ..condition = 'Root Rot'
+        ..progress = 0.9
+        ..status = 'Almost Healthy'),
     ];
 
     return Column(

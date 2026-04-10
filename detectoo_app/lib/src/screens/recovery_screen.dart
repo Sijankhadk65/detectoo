@@ -1,3 +1,4 @@
+import 'package:built_collection/built_collection.dart';
 import 'package:flutter/material.dart';
 
 import '../models/plant.dart';
@@ -20,81 +21,75 @@ class RecoveryScreen extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     // TODO: Replace with actual recovery plan data based on the plant.
-    final plan = RecoveryPlan(
-      condition: 'Black Spot Fungus',
-      severity: 'Moderate',
-      summary:
+    final plan = RecoveryPlan((b) => b
+      ..condition = 'Black Spot Fungus'
+      ..severity = 'Moderate'
+      ..summary =
           'Black spot is a common fungal disease that causes dark spots on '
           'leaves. It spreads through water splashing on infected leaves. '
           "Don't worry — with the right care, your plant can fully recover "
-          'in a few weeks.',
-      progress: 0.6,
-      startedOn: 'Apr 3, 2026',
-      estimatedRecovery: '2–3 weeks',
-      steps: const [
-        RecoveryStep(
-          title: 'Remove affected leaves',
-          description:
+          'in a few weeks.'
+      ..progress = 0.6
+      ..startedOn = 'Apr 3, 2026'
+      ..estimatedRecovery = '2–3 weeks'
+      ..steps.addAll([
+        RecoveryStep((b) => b
+          ..title = 'Remove affected leaves'
+          ..description =
               'Gently pluck off any leaves with dark spots. This stops '
-              'the fungus from spreading to healthy parts of the plant.',
-          icon: Icons.content_cut_rounded,
-          completed: true,
-        ),
-        RecoveryStep(
-          title: 'Apply fungicide spray',
-          description:
+              'the fungus from spreading to healthy parts of the plant.'
+          ..iconCodePoint = Icons.content_cut_rounded.codePoint
+          ..completed = true),
+        RecoveryStep((b) => b
+          ..title = 'Apply fungicide spray'
+          ..description =
               'Use a mild fungicide (like neem oil mixed with water) and '
-              'spray it on the remaining leaves. Do this once every 5 days.',
-          icon: Icons.shower_outlined,
-          completed: true,
-        ),
-        RecoveryStep(
-          title: 'Improve air circulation',
-          description:
+              'spray it on the remaining leaves. Do this once every 5 days.'
+          ..iconCodePoint = Icons.shower_outlined.codePoint
+          ..completed = true),
+        RecoveryStep((b) => b
+          ..title = 'Improve air circulation'
+          ..description =
               'Move your plant to a spot with better airflow. Avoid '
               'crowding it with other plants. Good air flow helps leaves '
-              'dry faster and prevents fungus growth.',
-          icon: Icons.air_rounded,
-          completed: true,
-        ),
-        RecoveryStep(
-          title: 'Adjust watering method',
-          description:
+              'dry faster and prevents fungus growth.'
+          ..iconCodePoint = Icons.air_rounded.codePoint
+          ..completed = true),
+        RecoveryStep((b) => b
+          ..title = 'Adjust watering method'
+          ..description =
               'Water the soil directly, not the leaves. Wet leaves are '
               "the main reason fungus spreads. It's best to water in the "
-              'morning so any splashes dry during the day.',
-          icon: Icons.water_drop_outlined,
-          completed: false,
-        ),
-        RecoveryStep(
-          title: 'Monitor for new spots',
-          description:
+              'morning so any splashes dry during the day.'
+          ..iconCodePoint = Icons.water_drop_outlined.codePoint
+          ..completed = false),
+        RecoveryStep((b) => b
+          ..title = 'Monitor for new spots'
+          ..description =
               'Check your plant every 2–3 days. If you see new spots '
               'appearing, repeat the fungicide spray. If no new spots '
-              'appear for 2 weeks, your plant is recovering well!',
-          icon: Icons.visibility_outlined,
-          completed: false,
-        ),
-      ],
-      doList: const [
+              'appear for 2 weeks, your plant is recovering well!'
+          ..iconCodePoint = Icons.visibility_outlined.codePoint
+          ..completed = false),
+      ])
+      ..doList.addAll([
         'Water at the base of the plant, not on the leaves',
         'Keep the plant in a spot with good sunlight and air flow',
         'Clean up any fallen leaves from the soil surface',
         'Wash your hands after handling the affected plant',
-      ],
-      dontList: const [
+      ])
+      ..dontList.addAll([
         "Don't mist or spray water on the leaves",
         "Don't place this plant too close to your other plants",
         "Don't over-fertilize — it can stress the plant further",
         "Don't ignore new spots — treat them early",
-      ],
-      signsOfImprovement: const [
+      ])
+      ..signsOfImprovement.addAll([
         'No new dark spots appearing on leaves',
         'New healthy green leaves growing',
         'Existing spots not getting larger',
         'Plant looks more vibrant and upright',
-      ],
-    );
+      ]));
 
     return Scaffold(
       body: SafeArea(
@@ -350,7 +345,7 @@ class RecoveryScreen extends StatelessWidget {
   }
 
   /// Builds the numbered recovery steps as a vertical timeline.
-  Widget _buildSteps(List<RecoveryStep> steps, ColorScheme colorScheme) {
+  Widget _buildSteps(BuiltList<RecoveryStep> steps, ColorScheme colorScheme) {
     return Column(
       children: List.generate(steps.length, (index) {
         final step = steps[index];
@@ -428,7 +423,7 @@ class RecoveryScreen extends StatelessWidget {
                       Row(
                         children: [
                           Icon(
-                            step.icon,
+                            step.iconData,
                             size: 18,
                             color: colorScheme.primary,
                           ),
