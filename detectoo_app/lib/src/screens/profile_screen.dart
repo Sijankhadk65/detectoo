@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../models/user.dart';
+import '../providers/auth_provider.dart';
 import '../routes.dart';
 import '../widgets/detectoo_button.dart';
 import '../widgets/detectoo_card.dart';
@@ -10,14 +13,14 @@ import '../widgets/section_title.dart';
 ///
 /// Displays user avatar, name, email, plant stats,
 /// app preferences, and a logout option.
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // TODO: Replace with actual user preferences.
   bool _notificationsEnabled = true;
   bool _waterReminders = true;
@@ -25,6 +28,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final user = ref.watch(authProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -33,7 +37,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeader(colorScheme),
+              _buildHeader(colorScheme, user),
               const SizedBox(height: 24),
               _buildStats(colorScheme),
               const SizedBox(height: 24),
@@ -60,7 +64,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   /// Builds the profile header with avatar, name, and email.
-  Widget _buildHeader(ColorScheme colorScheme) {
+  Widget _buildHeader(ColorScheme colorScheme, User? user) {
     return Center(
       child: Column(
         children: [
@@ -79,8 +83,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 14),
           Text(
-            // TODO: Replace with actual user name.
-            'Plant Lover',
+            user?.name ?? 'Plant Lover',
             style: TextStyle(
               fontFamily: 'Georgia',
               fontSize: 24,
@@ -90,8 +93,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            // TODO: Replace with actual user email.
-            'plantlover@example.com',
+            user?.email ?? '',
             style: TextStyle(
               fontSize: 14,
               color: colorScheme.onSurface.withValues(alpha: 0.5),
@@ -105,7 +107,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              'Member since Mar 2026',
+              'Member since ${user?.memberSince ?? ''}',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
@@ -341,7 +343,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       outlined: true,
       color: const Color(0xFFC62828),
       onPressed: () {
-        // TODO: Implement actual logout logic.
+        ref.read(authProvider.notifier).signOut();
         Navigator.pushNamedAndRemoveUntil(
           context,
           Routes.login,

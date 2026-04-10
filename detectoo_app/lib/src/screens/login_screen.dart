@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../providers/auth_provider.dart';
 import '../routes.dart';
 import '../widgets/detectoo_button.dart';
 
@@ -7,14 +9,14 @@ import '../widgets/detectoo_button.dart';
 ///
 /// Allows users to authenticate before accessing the app's features.
 /// Displays app branding, email/password fields, and a sign-up link.
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
@@ -49,9 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 DetectooButton(
                   label: 'Log In',
                   height: 52,
-                  onPressed: () {
-                    Navigator.pushReplacementNamed(context, Routes.home);
-                  },
+                  onPressed: _handleLogin,
                 ),
                 const SizedBox(height: 24),
                 _buildSignUpLink(colorScheme),
@@ -61,6 +61,19 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+
+  /// Handles the login action by creating a user and navigating home.
+  void _handleLogin() {
+    final email = _emailController.text.trim();
+    final name = email.split('@').first;
+
+    ref.read(authProvider.notifier).signIn(
+          name: name.isNotEmpty ? name : 'Plant Lover',
+          email: email.isNotEmpty ? email : 'user@detectoo.app',
+        );
+
+    Navigator.pushReplacementNamed(context, Routes.home);
   }
 
   /// Builds the app logo and welcome text.

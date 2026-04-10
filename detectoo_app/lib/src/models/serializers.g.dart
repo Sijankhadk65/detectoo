@@ -17,6 +17,7 @@ Serializers _$serializers =
           ..add(Reminder.serializer)
           ..add(ScanResult.serializer)
           ..add(Task.serializer)
+          ..add(User.serializer)
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(DetectedIssue)]),
             () => ListBuilder<DetectedIssue>(),

@@ -8,6 +8,7 @@ import 'recovery_plan.dart';
 import 'reminder.dart';
 import 'scan_result.dart';
 import 'task.dart';
+import 'user.dart';
 
 part 'serializers.g.dart';
 
@@ -22,6 +23,7 @@ part 'serializers.g.dart';
   ScanResult,
   DetectedIssue,
   Task,
+  User,
 ])
 final Serializers serializers =
     (_$serializers.toBuilder()..addPlugin(StandardJsonPlugin())).build();
