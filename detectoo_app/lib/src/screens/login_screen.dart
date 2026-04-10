@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../routes.dart';
+import '../widgets/detectoo_button.dart';
 
 /// Login screen for the Detectoo application.
 ///
@@ -45,7 +46,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 16),
                 _buildPasswordField(colorScheme),
                 const SizedBox(height: 24),
-                _buildLoginButton(colorScheme),
+                DetectooButton(
+                  label: 'Log In',
+                  height: 52,
+                  onPressed: () {
+                    Navigator.pushReplacementNamed(context, Routes.home);
+                  },
+                ),
                 const SizedBox(height: 24),
                 _buildSignUpLink(colorScheme),
               ],
@@ -125,7 +132,8 @@ class _LoginScreenState extends State<LoginScreen> {
       obscureText: _obscurePassword,
       decoration: InputDecoration(
         labelText: 'Password',
-        prefixIcon: Icon(Icons.lock_outline_rounded, color: colorScheme.primary),
+        prefixIcon:
+            Icon(Icons.lock_outline_rounded, color: colorScheme.primary),
         suffixIcon: IconButton(
           icon: Icon(
             _obscurePassword
@@ -149,32 +157,6 @@ class _LoginScreenState extends State<LoginScreen> {
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
         ),
-      ),
-    );
-  }
-
-  /// Builds the login button.
-  Widget _buildLoginButton(ColorScheme colorScheme) {
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: ElevatedButton(
-        onPressed: () {
-          Navigator.pushReplacementNamed(context, Routes.home);
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: colorScheme.primary,
-          foregroundColor: colorScheme.onPrimary,
-          elevation: 1,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          textStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        child: const Text('Log In'),
       ),
     );
   }

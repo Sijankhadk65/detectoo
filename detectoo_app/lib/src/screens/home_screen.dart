@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import '../models/recovery.dart';
 import '../models/reminder.dart';
 import '../models/task.dart';
+import '../widgets/detectoo_card.dart';
+import '../widgets/icon_badge.dart';
+import '../widgets/section_title.dart';
 
 /// Dashboard of the Detectoo application.
 ///
@@ -24,15 +27,24 @@ class HomeScreen extends StatelessWidget {
             children: [
               _buildGreeting(colorScheme),
               const SizedBox(height: 24),
-              _buildSectionTitle('Reminders', Icons.notifications_outlined, colorScheme),
+              const SectionTitle(
+                title: 'Reminders',
+                icon: Icons.notifications_outlined,
+              ),
               const SizedBox(height: 12),
               _buildReminders(colorScheme),
               const SizedBox(height: 24),
-              _buildSectionTitle('Tasks', Icons.checklist_rounded, colorScheme),
+              const SectionTitle(
+                title: 'Tasks',
+                icon: Icons.checklist_rounded,
+              ),
               const SizedBox(height: 12),
               _buildTasks(colorScheme),
               const SizedBox(height: 24),
-              _buildSectionTitle('Recovery Status', Icons.healing_rounded, colorScheme),
+              const SectionTitle(
+                title: 'Recovery Status',
+                icon: Icons.healing_rounded,
+              ),
               const SizedBox(height: 12),
               _buildRecoveryStatus(colorScheme),
             ],
@@ -77,43 +89,16 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Icon(
-              Icons.local_florist_rounded,
-              size: 32,
-              color: colorScheme.primary,
-            ),
+          IconBadge(
+            icon: Icons.local_florist_rounded,
+            iconSize: 32,
+            padding: 12,
+            borderRadius: 14,
+            backgroundColor:
+                colorScheme.primaryContainer.withValues(alpha: 0.5),
           ),
         ],
       ),
-    );
-  }
-
-  /// Builds a section title row with an icon and heading text.
-  Widget _buildSectionTitle(
-    String title,
-    IconData icon,
-    ColorScheme colorScheme,
-  ) {
-    return Row(
-      children: [
-        Icon(icon, size: 22, color: colorScheme.primary),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: TextStyle(
-            fontFamily: 'Georgia',
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: colorScheme.onSurface,
-          ),
-        ),
-      ],
     );
   }
 
@@ -139,32 +124,18 @@ class HomeScreen extends StatelessWidget {
     ];
 
     return Column(
-      children: reminders.map((r) => _buildReminderCard(r, colorScheme)).toList(),
+      children:
+          reminders.map((r) => _buildReminderCard(r, colorScheme)).toList(),
     );
   }
 
   /// Builds a single reminder card.
   Widget _buildReminderCard(Reminder reminder, ColorScheme colorScheme) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+    return DetectooCard(
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-        ),
-      ),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(reminder.icon, size: 20, color: colorScheme.primary),
-          ),
+          IconBadge(icon: reminder.icon),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
@@ -215,25 +186,15 @@ class HomeScreen extends StatelessWidget {
 
   /// Builds a single task card with a checkbox indicator.
   Widget _buildTaskCard(Task task, ColorScheme colorScheme) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+    return DetectooCard(
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-        ),
-      ),
       child: Row(
         children: [
           Container(
             width: 24,
             height: 24,
             decoration: BoxDecoration(
-              color: task.done
-                  ? colorScheme.primary
-                  : Colors.transparent,
+              color: task.done ? colorScheme.primary : Colors.transparent,
               borderRadius: BorderRadius.circular(7),
               border: Border.all(
                 color: task.done
@@ -290,39 +251,20 @@ class HomeScreen extends StatelessWidget {
     ];
 
     return Column(
-      children: recoveries.map((r) => _buildRecoveryCard(r, colorScheme)).toList(),
+      children:
+          recoveries.map((r) => _buildRecoveryCard(r, colorScheme)).toList(),
     );
   }
 
   /// Builds a single recovery status card with a progress indicator.
   Widget _buildRecoveryCard(Recovery recovery, ColorScheme colorScheme) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-        ),
-      ),
+    return DetectooCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  Icons.eco_rounded,
-                  size: 20,
-                  color: colorScheme.primary,
-                ),
-              ),
+              const IconBadge(icon: Icons.eco_rounded),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -348,9 +290,11 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer.withValues(alpha: 0.4),
+                  color:
+                      colorScheme.primaryContainer.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -370,8 +314,10 @@ class HomeScreen extends StatelessWidget {
             child: LinearProgressIndicator(
               value: recovery.progress,
               minHeight: 6,
-              backgroundColor: colorScheme.primaryContainer.withValues(alpha: 0.3),
-              valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+              backgroundColor:
+                  colorScheme.primaryContainer.withValues(alpha: 0.3),
+              valueColor:
+                  AlwaysStoppedAnimation<Color>(colorScheme.primary),
             ),
           ),
           const SizedBox(height: 6),

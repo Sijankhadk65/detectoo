@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../routes.dart';
+import '../widgets/detectoo_button.dart';
+import '../widgets/detectoo_card.dart';
+import '../widgets/icon_badge.dart';
+import '../widgets/section_title.dart';
 
 /// User profile screen for the Detectoo application.
 ///
@@ -33,11 +37,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 24),
               _buildStats(colorScheme),
               const SizedBox(height: 24),
-              _buildSectionTitle('Preferences', Icons.tune_rounded, colorScheme),
+              const SectionTitle(
+                title: 'Preferences',
+                icon: Icons.tune_rounded,
+              ),
               const SizedBox(height: 12),
               _buildPreferences(colorScheme),
               const SizedBox(height: 24),
-              _buildSectionTitle('Account', Icons.person_outline_rounded, colorScheme),
+              const SectionTitle(
+                title: 'Account',
+                icon: Icons.person_outline_rounded,
+              ),
               const SizedBox(height: 12),
               _buildAccountOptions(context, colorScheme),
               const SizedBox(height: 32),
@@ -113,11 +123,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     // TODO: Replace with actual stats.
     return Row(
       children: [
-        Expanded(child: _buildStatCard('7', 'Total Plants', Icons.yard_rounded, colorScheme)),
+        Expanded(
+            child: _buildStatCard(
+                '7', 'Total Plants', Icons.yard_rounded, colorScheme)),
         const SizedBox(width: 10),
-        Expanded(child: _buildStatCard('4', 'Healthy', Icons.favorite_rounded, colorScheme)),
+        Expanded(
+            child: _buildStatCard(
+                '4', 'Healthy', Icons.favorite_rounded, colorScheme)),
         const SizedBox(width: 10),
-        Expanded(child: _buildStatCard('3', 'Recovering', Icons.healing_rounded, colorScheme)),
+        Expanded(
+            child: _buildStatCard(
+                '3', 'Recovering', Icons.healing_rounded, colorScheme)),
       ],
     );
   }
@@ -129,15 +145,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     IconData icon,
     ColorScheme colorScheme,
   ) {
-    return Container(
+    return DetectooCard(
+      bottomMargin: 0,
       padding: const EdgeInsets.symmetric(vertical: 18),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-        ),
-      ),
       child: Column(
         children: [
           Icon(icon, size: 22, color: colorScheme.primary),
@@ -163,39 +173,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  /// Builds a section title row.
-  Widget _buildSectionTitle(
-    String title,
-    IconData icon,
-    ColorScheme colorScheme,
-  ) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: colorScheme.primary),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: TextStyle(
-            fontFamily: 'Georgia',
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: colorScheme.onSurface,
-          ),
-        ),
-      ],
-    );
-  }
-
   /// Builds the preferences section with toggle switches.
   Widget _buildPreferences(ColorScheme colorScheme) {
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-        ),
-      ),
+    return DetectooCard(
+      bottomMargin: 0,
+      padding: EdgeInsets.zero,
       child: Column(
         children: [
           _buildToggleTile(
@@ -236,14 +218,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, size: 20, color: colorScheme.primary),
-          ),
+          IconBadge(icon: icon),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
@@ -280,14 +255,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   /// Builds the account options list.
   Widget _buildAccountOptions(BuildContext context, ColorScheme colorScheme) {
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-        ),
-      ),
+    return DetectooCard(
+      bottomMargin: 0,
+      padding: EdgeInsets.zero,
       child: Column(
         children: [
           _buildOptionTile(
@@ -341,14 +311,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, size: 20, color: colorScheme.primary),
-            ),
+            IconBadge(icon: icon),
             const SizedBox(width: 14),
             Expanded(
               child: Text(
@@ -372,32 +335,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   /// Builds the logout button.
   Widget _buildLogoutButton(BuildContext context, ColorScheme colorScheme) {
-    return SizedBox(
-      width: double.infinity,
-      height: 50,
-      child: OutlinedButton.icon(
-        onPressed: () {
-          // TODO: Implement actual logout logic.
-          Navigator.pushNamedAndRemoveUntil(
-            context,
-            Routes.login,
-            (route) => false,
-          );
-        },
-        icon: const Icon(Icons.logout_rounded),
-        label: const Text('Log Out'),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: const Color(0xFFC62828),
-          side: const BorderSide(color: Color(0xFFC62828), width: 1.2),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          textStyle: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
+    return DetectooButton(
+      label: 'Log Out',
+      icon: Icons.logout_rounded,
+      outlined: true,
+      color: const Color(0xFFC62828),
+      onPressed: () {
+        // TODO: Implement actual logout logic.
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          Routes.login,
+          (route) => false,
+        );
+      },
     );
   }
 }

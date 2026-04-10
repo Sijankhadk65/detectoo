@@ -21,11 +21,19 @@ detectoo_app
 │   │   ├── app.dart    # MaterialApp with theme, named routes, and initial route
 │   │   ├── routes.dart # Centralized route name constants (Routes class)
 │   │   ├── models/
-│   │   │   ├── reminder.dart  # Plant care reminder data class
-│   │   │   ├── task.dart      # Task/todo item data class
-│   │   │   └── recovery.dart  # Plant recovery status data class
+│   │   │   ├── plant.dart         # Plant data class with health status enum
+│   │   │   ├── recovery.dart      # Plant recovery status data class
+│   │   │   ├── recovery_plan.dart # Recovery plan with steps, do/don't lists
+│   │   │   ├── reminder.dart      # Plant care reminder data class
+│   │   │   ├── scan_result.dart   # Scan result with detected issues
+│   │   │   └── task.dart          # Task/todo item data class
 │   │   ├── widgets/
-│   │   │   └── bottom_nav_bar.dart  # Bottom navigation shell (Home, Plants, Scan, Profile tabs)
+│   │   │   ├── bottom_nav_bar.dart  # Bottom navigation shell (Home, Plants, Scan, Profile tabs)
+│   │   │   ├── detectoo_button.dart # Reusable full-width elevated/outlined button
+│   │   │   ├── detectoo_card.dart   # Reusable bordered card container
+│   │   │   ├── icon_badge.dart      # Reusable icon in a rounded colored container
+│   │   │   ├── section_title.dart   # Reusable section heading with icon
+│   │   │   └── status_chip.dart     # Reusable pill-shaped colored status badge
 │   │   └── screens/
 │   │       ├── login_screen.dart     # App login screen
 │   │       ├── home_screen.dart      # Dashboard of the application
@@ -72,6 +80,7 @@ flutter analyze
 - Navigation between screens must be done using named routes
 - All route names are defined centrally in `lib/src/routes.dart`. When adding a new screen, add its route to `Routes` and register it in `app.dart`
 - All data classes must be placed in `lib/src/models/`
+- Reusable UI components must be placed in `lib/src/widgets/`. Before creating inline widget builders in screens, check if an existing reusable widget can be used (e.g., `SectionTitle`, `DetectooCard`, `IconBadge`, `StatusChip`, `DetectooButton`)
 
 ## Design
 

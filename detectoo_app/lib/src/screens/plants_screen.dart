@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../models/plant.dart';
 import '../routes.dart';
+import '../widgets/detectoo_card.dart';
+import '../widgets/status_chip.dart';
 
 /// Displays a list of plants owned by the user.
 ///
@@ -100,20 +102,10 @@ class PlantsScreen extends StatelessWidget {
               ),
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withValues(alpha: 0.4),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              '$plantCount plants',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: colorScheme.primary,
-              ),
-            ),
+          StatusChip(
+            label: '$plantCount plants',
+            color: colorScheme.primary,
+            backgroundAlpha: 0.15,
           ),
         ],
       ),
@@ -160,7 +152,7 @@ class PlantsScreen extends StatelessWidget {
     );
   }
 
-  /// Builds a single status summary chip.
+  /// Builds a single status summary chip with a dot indicator.
   Widget _buildStatusChip(
     String label,
     int count,
@@ -200,21 +192,12 @@ class PlantsScreen extends StatelessWidget {
   }
 
   /// Builds a single tappable plant card.
-  Widget _buildPlantCard(BuildContext context, Plant plant, ColorScheme colorScheme) {
-    return GestureDetector(
+  Widget _buildPlantCard(
+      BuildContext context, Plant plant, ColorScheme colorScheme) {
+    return DetectooCard(
       onTap: () {
         Navigator.pushNamed(context, Routes.plantDetail, arguments: plant);
       },
-      child: Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-        ),
-      ),
       child: Row(
         children: [
           Container(
@@ -260,23 +243,11 @@ class PlantsScreen extends StatelessWidget {
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: plant.healthStatus.color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              plant.healthStatus.label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: plant.healthStatus.color,
-              ),
-            ),
+          StatusChip(
+            label: plant.healthStatus.label,
+            color: plant.healthStatus.color,
           ),
         ],
-      ),
       ),
     );
   }

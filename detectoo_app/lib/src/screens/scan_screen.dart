@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../models/scan_result.dart';
 import '../routes.dart';
+import '../widgets/detectoo_button.dart';
+import '../widgets/detectoo_card.dart';
+import '../widgets/icon_badge.dart';
+import '../widgets/section_title.dart';
+import '../widgets/status_chip.dart';
 
 /// Scan screen for the Detectoo application.
 ///
@@ -70,19 +75,17 @@ class _ScanScreenState extends State<ScanScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildActionButton(
-                'Take Photo',
-                Icons.camera_alt_rounded,
-                colorScheme,
+              child: DetectooButton(
+                label: 'Take Photo',
+                icon: Icons.camera_alt_rounded,
                 onPressed: () => _startScan(),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: _buildActionButton(
-                'Upload Photo',
-                Icons.photo_library_rounded,
-                colorScheme,
+              child: DetectooButton(
+                label: 'Upload Photo',
+                icon: Icons.photo_library_rounded,
                 outlined: true,
                 onPressed: () => _startScan(),
               ),
@@ -272,14 +275,12 @@ class _ScanScreenState extends State<ScanScreen> {
         _buildPlantIdentity(result, colorScheme),
         const SizedBox(height: 20),
         if (result.issues.isNotEmpty) ...[
-          _buildSectionTitle(
-            'Detected Issues',
-            Icons.warning_amber_rounded,
-            colorScheme,
+          const SectionTitle(
+            title: 'Detected Issues',
+            icon: Icons.warning_amber_rounded,
           ),
           const SizedBox(height: 12),
-          ...result.issues
-              .map((issue) => _buildIssueCard(issue, colorScheme)),
+          ...result.issues.map((issue) => _buildIssueCard(issue, colorScheme)),
           const SizedBox(height: 20),
         ],
         if (result.isHealthy) _buildHealthyMessage(colorScheme),
@@ -359,24 +360,15 @@ class _ScanScreenState extends State<ScanScreen> {
 
   /// Builds the identified plant section.
   Widget _buildPlantIdentity(ScanResult result, ColorScheme colorScheme) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-        ),
-      ),
+    return DetectooCard(
+      bottomMargin: 0,
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(Icons.eco_rounded, size: 24, color: colorScheme.primary),
+          const IconBadge(
+            icon: Icons.eco_rounded,
+            iconSize: 24,
+            padding: 10,
+            borderRadius: 12,
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -403,46 +395,13 @@ class _ScanScreenState extends State<ScanScreen> {
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              'Identified',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: colorScheme.primary,
-              ),
-            ),
+          StatusChip(
+            label: 'Identified',
+            color: colorScheme.primary,
+            backgroundAlpha: 0.12,
           ),
         ],
       ),
-    );
-  }
-
-  /// Builds a section title row.
-  Widget _buildSectionTitle(
-    String title,
-    IconData icon,
-    ColorScheme colorScheme,
-  ) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: colorScheme.primary),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: TextStyle(
-            fontFamily: 'Georgia',
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: colorScheme.onSurface,
-          ),
-        ),
-      ],
     );
   }
 
@@ -451,32 +410,17 @@ class _ScanScreenState extends State<ScanScreen> {
     final severityColor = _severityColor(issue.severity);
     final confidencePercent = (issue.confidence * 100).toInt();
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: severityColor.withValues(alpha: 0.3),
-        ),
-      ),
+    return DetectooCard(
+      borderColor: severityColor.withValues(alpha: 0.3),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: severityColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  Icons.bug_report_outlined,
-                  size: 20,
-                  color: severityColor,
-                ),
+              IconBadge(
+                icon: Icons.bug_report_outlined,
+                backgroundColor: severityColor.withValues(alpha: 0.1),
+                iconColor: severityColor,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -494,31 +438,17 @@ class _ScanScreenState extends State<ScanScreen> {
                     const SizedBox(height: 2),
                     Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: severityColor.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            issue.severity,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: severityColor,
-                            ),
-                          ),
+                        StatusChip(
+                          label: issue.severity,
+                          color: severityColor,
                         ),
                         const SizedBox(width: 8),
                         Text(
                           '$confidencePercent% confidence',
                           style: TextStyle(
                             fontSize: 11,
-                            color: colorScheme.onSurface
-                                .withValues(alpha: 0.4),
+                            color:
+                                colorScheme.onSurface.withValues(alpha: 0.4),
                           ),
                         ),
                       ],
@@ -577,61 +507,31 @@ class _ScanScreenState extends State<ScanScreen> {
   Widget _buildActionButtons(ScanResult result, ColorScheme colorScheme) {
     return Column(
       children: [
-        SizedBox(
-          width: double.infinity,
-          height: 50,
-          child: ElevatedButton.icon(
-            onPressed: () {
-              // TODO: Implement add plant to account.
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${result.plantName} added to your plants!'),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+        DetectooButton(
+          label: 'Add to My Plants',
+          icon: Icons.add_rounded,
+          onPressed: () {
+            // TODO: Implement add plant to account.
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('${result.plantName} added to your plants!'),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
-              );
-            },
-            icon: const Icon(Icons.add_rounded),
-            label: const Text('Add to My Plants'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: colorScheme.primary,
-              foregroundColor: colorScheme.onPrimary,
-              elevation: 1,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
               ),
-              textStyle: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
+            );
+          },
         ),
         if (!result.isHealthy) ...[
           const SizedBox(height: 10),
-          SizedBox(
-            width: double.infinity,
-            height: 50,
-            child: OutlinedButton.icon(
-              onPressed: () {
-                Navigator.pushNamed(context, Routes.recovery);
-              },
-              icon: const Icon(Icons.healing_rounded),
-              label: const Text('Start Recovery Plan'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: colorScheme.primary,
-                side: BorderSide(color: colorScheme.primary, width: 1.2),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                textStyle: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
+          DetectooButton(
+            label: 'Start Recovery Plan',
+            icon: Icons.healing_rounded,
+            outlined: true,
+            onPressed: () {
+              Navigator.pushNamed(context, Routes.recovery);
+            },
           ),
         ],
       ],
@@ -652,58 +552,6 @@ class _ScanScreenState extends State<ScanScreen> {
           style: TextStyle(
             fontSize: 14,
             color: colorScheme.onSurface.withValues(alpha: 0.5),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Builds a primary or outlined action button.
-  Widget _buildActionButton(
-    String label,
-    IconData icon,
-    ColorScheme colorScheme, {
-    bool outlined = false,
-    required VoidCallback onPressed,
-  }) {
-    if (outlined) {
-      return SizedBox(
-        height: 50,
-        child: OutlinedButton.icon(
-          onPressed: onPressed,
-          icon: Icon(icon),
-          label: Text(label),
-          style: OutlinedButton.styleFrom(
-            foregroundColor: colorScheme.primary,
-            side: BorderSide(color: colorScheme.primary, width: 1.2),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
-            textStyle: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      );
-    }
-
-    return SizedBox(
-      height: 50,
-      child: ElevatedButton.icon(
-        onPressed: onPressed,
-        icon: Icon(icon),
-        label: Text(label),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: colorScheme.primary,
-          foregroundColor: colorScheme.onPrimary,
-          elevation: 1,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          textStyle: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
           ),
         ),
       ),

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../models/plant.dart';
 import '../models/recovery_plan.dart';
+import '../widgets/icon_badge.dart';
+import '../widgets/section_title.dart';
+import '../widgets/status_chip.dart';
 
 /// Recovery screen for the Detectoo application.
 ///
@@ -110,20 +113,18 @@ class RecoveryScreen extends StatelessWidget {
                     const SizedBox(height: 24),
                     _buildProgressSection(plan, colorScheme),
                     const SizedBox(height: 24),
-                    _buildSectionTitle(
-                      'Recovery Steps',
-                      Icons.format_list_numbered_rounded,
-                      colorScheme,
+                    const SectionTitle(
+                      title: 'Recovery Steps',
+                      icon: Icons.format_list_numbered_rounded,
                     ),
                     const SizedBox(height: 12),
                     _buildSteps(plan.steps, colorScheme),
                     const SizedBox(height: 24),
                     _buildDoAndDont(plan, colorScheme),
                     const SizedBox(height: 24),
-                    _buildSectionTitle(
-                      'Signs Your Plant Is Getting Better',
-                      Icons.trending_up_rounded,
-                      colorScheme,
+                    const SectionTitle(
+                      title: 'Signs Your Plant Is Getting Better',
+                      icon: Icons.trending_up_rounded,
                     ),
                     const SizedBox(height: 12),
                     _buildSignsOfImprovement(plan, colorScheme),
@@ -164,17 +165,13 @@ class RecoveryScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(
-              Icons.healing_rounded,
-              size: 36,
-              color: colorScheme.primary,
-            ),
+          IconBadge(
+            icon: Icons.healing_rounded,
+            iconSize: 36,
+            padding: 14,
+            borderRadius: 16,
+            backgroundColor:
+                colorScheme.primaryContainer.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 14),
           if (plant != null) ...[
@@ -198,23 +195,10 @@ class RecoveryScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-            decoration: BoxDecoration(
-              color: _severityColor(plan.severity).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: _severityColor(plan.severity).withValues(alpha: 0.3),
-              ),
-            ),
-            child: Text(
-              '${plan.severity} Severity',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: _severityColor(plan.severity),
-              ),
-            ),
+          StatusChip(
+            label: '${plan.severity} Severity',
+            color: _severityColor(plan.severity),
+            showBorder: true,
           ),
         ],
       ),
@@ -226,10 +210,9 @@ class RecoveryScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle(
-          'What Is This?',
-          Icons.help_outline_rounded,
-          colorScheme,
+        const SectionTitle(
+          title: 'What Is This?',
+          icon: Icons.help_outline_rounded,
         ),
         const SizedBox(height: 12),
         Container(
@@ -366,29 +349,6 @@ class RecoveryScreen extends StatelessWidget {
     );
   }
 
-  /// Builds a section title row.
-  Widget _buildSectionTitle(
-    String title,
-    IconData icon,
-    ColorScheme colorScheme,
-  ) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: colorScheme.primary),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: TextStyle(
-            fontFamily: 'Georgia',
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: colorScheme.onSurface,
-          ),
-        ),
-      ],
-    );
-  }
-
   /// Builds the numbered recovery steps as a vertical timeline.
   Widget _buildSteps(List<RecoveryStep> steps, ColorScheme colorScheme) {
     return Column(
@@ -484,24 +444,9 @@ class RecoveryScreen extends StatelessWidget {
                             ),
                           ),
                           if (step.completed)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 3,
-                              ),
-                              decoration: BoxDecoration(
-                                color: colorScheme.primary
-                                    .withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                'Done',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: colorScheme.primary,
-                                ),
-                              ),
+                            StatusChip(
+                              label: 'Done',
+                              color: colorScheme.primary,
                             ),
                         ],
                       ),
@@ -531,10 +476,9 @@ class RecoveryScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle(
-          "Do's & Don'ts",
-          Icons.rule_rounded,
-          colorScheme,
+        const SectionTitle(
+          title: "Do's & Don'ts",
+          icon: Icons.rule_rounded,
         ),
         const SizedBox(height: 12),
         // Do's
