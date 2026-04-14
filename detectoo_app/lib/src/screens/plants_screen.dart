@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/plant.dart';
 import '../routes.dart';
 import '../widgets/detectoo_card.dart';
-import '../widgets/status_chip.dart';
+import '../widgets/gradient_banner.dart';
 
 /// Displays a list of plants owned by the user.
 ///
@@ -60,16 +60,29 @@ class PlantsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeader(colorScheme, plants.length),
-            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+              child: _buildHeaderBanner(colorScheme, plants),
+            ),
+            const SizedBox(height: 16),
             _buildStatusSummary(colorScheme, plants),
             const SizedBox(height: 16),
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 itemCount: plants.length,
-                itemBuilder: (context, index) =>
-                    _buildPlantCard(context, plants[index], colorScheme),
+                itemBuilder: (context, index) {
+                  final images = [
+                    'assets/my_plant_bg.jpg',
+                    'assets/login_bg.jpg',
+                  ];
+                  return _buildPlantCard(
+                    context,
+                    plants[index],
+                    images[index % images.length],
+                    colorScheme,
+                  );
+                },
               ),
             ),
           ],
@@ -78,27 +91,61 @@ class PlantsScreen extends StatelessWidget {
     );
   }
 
-  /// Builds the screen header with title and plant count.
-  Widget _buildHeader(ColorScheme colorScheme, int plantCount) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+  /// Builds the screen header as a gradient banner.
+  Widget _buildHeaderBanner(ColorScheme colorScheme, List<Plant> plants) {
+    return GradientBanner(
+      colors: [
+        const Color(0xFF2E7D32),
+        const Color(0xFF00695C),
+      ],
+      padding: const EdgeInsets.all(20),
       child: Row(
         children: [
           Expanded(
-            child: Text(
-              'My Plants',
-              style: TextStyle(
-                fontFamily: 'Georgia',
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: colorScheme.onSurface,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'My Plants',
+                  style: TextStyle(
+                    fontFamily: 'Georgia',
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${plants.length} plants in your garden',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white.withValues(alpha: 0.8),
+                  ),
+                ),
+              ],
             ),
           ),
-          StatusChip(
-            label: '$plantCount plants',
-            color: colorScheme.primary,
-            backgroundAlpha: 0.15,
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  const Color(0xFFFFB300).withValues(alpha: 0.3),
+                  const Color(0xFFFF8F00).withValues(alpha: 0.2),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: const Color(0xFFFFD54F).withValues(alpha: 0.25),
+              ),
+            ),
+            child: const Icon(
+              Icons.yard_rounded,
+              size: 28,
+              color: Color(0xFFFFD54F),
+            ),
           ),
         ],
       ),
@@ -124,21 +171,18 @@ class PlantsScreen extends StatelessWidget {
             'Healthy',
             healthyCount,
             PlantHealthStatus.healthy.color,
-            colorScheme,
           ),
           const SizedBox(width: 8),
           _buildStatusChip(
             'Attention',
             attentionCount,
             PlantHealthStatus.needsAttention.color,
-            colorScheme,
           ),
           const SizedBox(width: 8),
           _buildStatusChip(
             'Recovering',
             recoveringCount,
             PlantHealthStatus.recovering.color,
-            colorScheme,
           ),
         ],
       ),
@@ -146,18 +190,13 @@ class PlantsScreen extends StatelessWidget {
   }
 
   /// Builds a single status summary chip with a dot indicator.
-  Widget _buildStatusChip(
-    String label,
-    int count,
-    Color color,
-    ColorScheme colorScheme,
-  ) {
+  Widget _buildStatusChip(String label, int count, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -184,61 +223,143 @@ class PlantsScreen extends StatelessWidget {
     );
   }
 
-  /// Builds a single tappable plant card.
+  /// Builds a single tappable plant card with image header and status badge.
   Widget _buildPlantCard(
-      BuildContext context, Plant plant, ColorScheme colorScheme) {
+      BuildContext context, Plant plant, String imagePath,
+      ColorScheme colorScheme) {
     return DetectooCard(
+      elevation: 1.5,
       onTap: () {
         Navigator.pushNamed(context, Routes.plantDetail, arguments: plant);
       },
-      child: Row(
+      padding: EdgeInsets.zero,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(14),
+          // Image header with status badge
+          ClipRRect(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
             ),
-            child: Icon(plant.iconData, size: 26, color: colorScheme.primary),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Stack(
               children: [
-                Text(
-                  plant.name,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: colorScheme.onSurface,
-                  ),
+                Image.asset(
+                  imagePath,
+                  width: double.infinity,
+                  height: 140,
+                  fit: BoxFit.cover,
                 ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.water_drop_outlined,
-                      size: 14,
-                      color: colorScheme.onSurface.withValues(alpha: 0.4),
+                // Status badge
+                Positioned(
+                  top: 10,
+                  left: 10,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: plant.healthStatus.color,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Watered ${plant.lastWatered}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: colorScheme.onSurface.withValues(alpha: 0.5),
-                      ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          plant.healthStatus == PlantHealthStatus.healthy
+                              ? Icons.check_circle_rounded
+                              : plant.healthStatus ==
+                                      PlantHealthStatus.recovering
+                                  ? Icons.healing_rounded
+                                  : Icons.warning_rounded,
+                          size: 13,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          plant.healthStatus.label.toUpperCase(),
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ],
             ),
           ),
-          StatusChip(
-            label: plant.healthStatus.label,
-            color: plant.healthStatus.color,
+          // Plant info
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+            child: Row(
+              children: [
+                // Plant icon
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    plant.iconData,
+                    size: 22,
+                    color: colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        plant.name,
+                        style: TextStyle(
+                          fontFamily: 'Georgia',
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.water_drop_outlined,
+                            size: 13,
+                            color: colorScheme.secondary,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Watered ${plant.lastWatered}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: colorScheme.onSurface
+                                  .withValues(alpha: 0.5),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: colorScheme.onSurface.withValues(alpha: 0.3),
+                ),
+              ],
+            ),
           ),
         ],
       ),

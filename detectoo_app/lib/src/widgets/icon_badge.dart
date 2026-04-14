@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 /// A small icon displayed inside a rounded, lightly colored container.
 ///
 /// Used as a visual marker in list items, cards, and option tiles
-/// throughout the app. Defaults to the theme's primaryContainer
-/// background and primary icon color.
+/// throughout the app. The background color automatically derives
+/// from the icon color, creating a cohesive tinted effect that works
+/// with both the primary green and accent amber palettes.
 class IconBadge extends StatelessWidget {
   /// The icon to display.
   final IconData icon;
@@ -18,8 +19,8 @@ class IconBadge extends StatelessWidget {
   /// The border radius of the container. Defaults to 10.
   final double borderRadius;
 
-  /// Optional custom background color. Defaults to primaryContainer
-  /// with 0.3 alpha.
+  /// Optional custom background color. When null, derives a tinted
+  /// background from the [iconColor] or theme primary.
   final Color? backgroundColor;
 
   /// Optional custom icon color. Defaults to the theme's primary color.
@@ -38,18 +39,20 @@ class IconBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final effectiveIconColor = iconColor ?? colorScheme.primary;
+    final effectiveBackground =
+        backgroundColor ?? effectiveIconColor.withValues(alpha: 0.12);
 
     return Container(
       padding: EdgeInsets.all(padding),
       decoration: BoxDecoration(
-        color: backgroundColor ??
-            colorScheme.primaryContainer.withValues(alpha: 0.3),
+        color: effectiveBackground,
         borderRadius: BorderRadius.circular(borderRadius),
       ),
       child: Icon(
         icon,
         size: iconSize,
-        color: iconColor ?? colorScheme.primary,
+        color: effectiveIconColor,
       ),
     );
   }

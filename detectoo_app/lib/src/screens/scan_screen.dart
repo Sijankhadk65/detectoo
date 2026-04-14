@@ -4,6 +4,7 @@ import '../models/scan_result.dart';
 import '../routes.dart';
 import '../widgets/detectoo_button.dart';
 import '../widgets/detectoo_card.dart';
+import '../widgets/gradient_banner.dart';
 import '../widgets/icon_badge.dart';
 import '../widgets/section_title.dart';
 import '../widgets/status_chip.dart';
@@ -50,14 +51,31 @@ class _ScanScreenState extends State<ScanScreen> {
 
   /// Builds the screen title.
   Widget _buildTitle(ColorScheme colorScheme) {
-    return Text(
-      'Scan Plant',
-      style: TextStyle(
-        fontFamily: 'Georgia',
-        fontSize: 24,
-        fontWeight: FontWeight.bold,
-        color: colorScheme.onSurface,
-      ),
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: colorScheme.secondary.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(
+            Icons.document_scanner_rounded,
+            size: 22,
+            color: colorScheme.secondary,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          'Scan Plant',
+          style: TextStyle(
+            fontFamily: 'Georgia',
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: colorScheme.onSurface,
+          ),
+        ),
+      ],
     );
   }
 
@@ -78,6 +96,7 @@ class _ScanScreenState extends State<ScanScreen> {
               child: DetectooButton(
                 label: 'Take Photo',
                 icon: Icons.camera_alt_rounded,
+                color: colorScheme.secondary,
                 onPressed: () => _startScan(),
               ),
             ),
@@ -98,50 +117,125 @@ class _ScanScreenState extends State<ScanScreen> {
     );
   }
 
-  /// Builds the camera preview placeholder.
+  /// Builds the camera preview placeholder with gradient background.
   Widget _buildCameraPreview(ColorScheme colorScheme) {
     return Container(
       width: double.infinity,
-      height: 280,
+      height: 300,
       decoration: BoxDecoration(
-        color: colorScheme.primaryContainer.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            colorScheme.primary.withValues(alpha: 0.08),
+            colorScheme.primaryContainer.withValues(alpha: 0.15),
+            colorScheme.primary.withValues(alpha: 0.05),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+          color: colorScheme.primary.withValues(alpha: 0.15),
           width: 1.5,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.primary.withValues(alpha: 0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withValues(alpha: 0.3),
-              shape: BoxShape.circle,
-            ),
+          // Decorative background icons
+          Positioned(
+            top: 20,
+            left: 30,
             child: Icon(
-              Icons.center_focus_strong_rounded,
-              size: 48,
-              color: colorScheme.primary,
+              Icons.eco_outlined,
+              size: 40,
+              color: colorScheme.primary.withValues(alpha: 0.08),
             ),
           ),
-          const SizedBox(height: 16),
-          Text(
-            'Point your camera at a plant',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: colorScheme.onSurface.withValues(alpha: 0.6),
+          Positioned(
+            bottom: 30,
+            right: 25,
+            child: Icon(
+              Icons.local_florist_outlined,
+              size: 50,
+              color: colorScheme.primary.withValues(alpha: 0.06),
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            'Or upload a photo from your gallery',
-            style: TextStyle(
-              fontSize: 13,
-              color: colorScheme.onSurface.withValues(alpha: 0.4),
+          Positioned(
+            top: 50,
+            right: 50,
+            child: Icon(
+              Icons.grass_outlined,
+              size: 35,
+              color: colorScheme.primary.withValues(alpha: 0.07),
             ),
+          ),
+          // Warm accent circle
+          Positioned(
+            bottom: 50,
+            left: 60,
+            child: Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: colorScheme.secondary.withValues(alpha: 0.08),
+              ),
+            ),
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      colorScheme.secondary.withValues(alpha: 0.18),
+                      colorScheme.secondary.withValues(alpha: 0.08),
+                    ],
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: colorScheme.secondary.withValues(alpha: 0.12),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  Icons.center_focus_strong_rounded,
+                  size: 48,
+                  color: colorScheme.secondary,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Point your camera at a plant',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Or upload a photo from your gallery',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: colorScheme.onSurface.withValues(alpha: 0.45),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -160,8 +254,11 @@ class _ScanScreenState extends State<ScanScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colorScheme.primaryContainer.withValues(alpha: 0.12),
+        color: colorScheme.secondaryContainer.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: colorScheme.secondary.withValues(alpha: 0.15),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -171,7 +268,7 @@ class _ScanScreenState extends State<ScanScreen> {
               Icon(
                 Icons.lightbulb_outline_rounded,
                 size: 18,
-                color: colorScheme.primary,
+                color: colorScheme.secondary,
               ),
               const SizedBox(width: 8),
               Text(
@@ -232,7 +329,8 @@ class _ScanScreenState extends State<ScanScreen> {
               height: 64,
               child: CircularProgressIndicator(
                 strokeWidth: 3,
-                valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(colorScheme.secondary),
               ),
             ),
             const SizedBox(height: 24),
@@ -278,6 +376,7 @@ class _ScanScreenState extends State<ScanScreen> {
           const SectionTitle(
             title: 'Detected Issues',
             icon: Icons.warning_amber_rounded,
+            iconColor: Color(0xFFE65100),
           ),
           const SizedBox(height: 12),
           ...result.issues.map((issue) => _buildIssueCard(issue, colorScheme)),
@@ -292,32 +391,20 @@ class _ScanScreenState extends State<ScanScreen> {
     );
   }
 
-  /// Builds the result header with a status icon.
+  /// Builds the result header as a gradient banner.
   Widget _buildResultHeader(ScanResult result, ColorScheme colorScheme) {
     final isHealthy = result.isHealthy;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: isHealthy
-            ? const Color(0xFF2E7D32).withValues(alpha: 0.08)
-            : const Color(0xFFE65100).withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isHealthy
-              ? const Color(0xFF2E7D32).withValues(alpha: 0.2)
-              : const Color(0xFFE65100).withValues(alpha: 0.2),
-        ),
-      ),
+    return GradientBanner(
+      colors: isHealthy
+          ? [const Color(0xFF2E7D32), const Color(0xFF00695C)]
+          : [const Color(0xFFE65100), const Color(0xFFBF360C)],
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: isHealthy
-                  ? const Color(0xFF2E7D32).withValues(alpha: 0.12)
-                  : const Color(0xFFE65100).withValues(alpha: 0.12),
+              color: Colors.white.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -325,21 +412,17 @@ class _ScanScreenState extends State<ScanScreen> {
                   ? Icons.check_circle_rounded
                   : Icons.error_outline_rounded,
               size: 40,
-              color: isHealthy
-                  ? const Color(0xFF2E7D32)
-                  : const Color(0xFFE65100),
+              color: Colors.white,
             ),
           ),
           const SizedBox(height: 14),
           Text(
             isHealthy ? 'Your Plant Looks Healthy!' : 'Issues Detected',
-            style: TextStyle(
+            style: const TextStyle(
               fontFamily: 'Georgia',
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: isHealthy
-                  ? const Color(0xFF2E7D32)
-                  : const Color(0xFFE65100),
+              color: Colors.white,
             ),
           ),
           const SizedBox(height: 6),
@@ -350,7 +433,7 @@ class _ScanScreenState extends State<ScanScreen> {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
-              color: colorScheme.onSurface.withValues(alpha: 0.6),
+              color: Colors.white.withValues(alpha: 0.85),
             ),
           ),
         ],
@@ -405,13 +488,13 @@ class _ScanScreenState extends State<ScanScreen> {
     );
   }
 
-  /// Builds a single detected issue card.
+  /// Builds a single detected issue card with accent strip.
   Widget _buildIssueCard(DetectedIssue issue, ColorScheme colorScheme) {
     final severityColor = _severityColor(issue.severity);
     final confidencePercent = (issue.confidence * 100).toInt();
 
     return DetectooCard(
-      borderColor: severityColor.withValues(alpha: 0.3),
+      accentColor: severityColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -419,7 +502,6 @@ class _ScanScreenState extends State<ScanScreen> {
             children: [
               IconBadge(
                 icon: Icons.bug_report_outlined,
-                backgroundColor: severityColor.withValues(alpha: 0.1),
                 iconColor: severityColor,
               ),
               const SizedBox(width: 12),
@@ -479,6 +561,9 @@ class _ScanScreenState extends State<ScanScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF2E7D32).withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: const Color(0xFF2E7D32).withValues(alpha: 0.15),
+        ),
       ),
       child: Row(
         children: [
@@ -510,6 +595,7 @@ class _ScanScreenState extends State<ScanScreen> {
         DetectooButton(
           label: 'Add to My Plants',
           icon: Icons.add_rounded,
+          color: colorScheme.secondary,
           onPressed: () {
             // TODO: Implement add plant to account.
             ScaffoldMessenger.of(context).showSnackBar(

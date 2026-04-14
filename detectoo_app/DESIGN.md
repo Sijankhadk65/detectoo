@@ -18,11 +18,13 @@ Text is categorized into four levels, using a mix of Serif and Sans-Serif fonts:
 
 ## Color
 
-Green monotone palette — all UI elements derive from shades of green to reflect the plant care theme.
+Green + Amber dual palette — green anchors the plant care identity while amber brings warmth and energy to interactive elements.
 
-- Use varying shades, tints, and tones of green for backgrounds, surfaces, text, and accents
+- **Primary (Green)**: Headers, banners, gradient backgrounds, navigation, section icons — the core brand color
+- **Accent (Amber `#FF8F00`)**: CTA buttons, progress indicators, toggles, completed states, sign-up links — draws attention to actionable elements
+- Use green for structural/informational UI; use amber for interactive/action-oriented UI
 - Maintain sufficient contrast between foreground and background for accessibility
-- Avoid introducing other hue families; keep the palette strictly monotone green
+- Limit the palette to green and amber families — avoid introducing additional hue families
 
 ## Theme
 

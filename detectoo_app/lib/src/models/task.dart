@@ -11,6 +11,9 @@ abstract class Task implements Built<Task, TaskBuilder> {
   /// Whether the task has been completed.
   bool get done;
 
+  /// When the task is due (e.g. "Today, 8:00 AM").
+  String get dueDate;
+
   Task._();
 
   factory Task([void Function(TaskBuilder) updates]) = _$Task;

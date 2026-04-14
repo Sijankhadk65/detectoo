@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../models/plant.dart';
 import '../routes.dart';
+import '../widgets/detectoo_button.dart';
+import '../widgets/detectoo_card.dart';
+import '../widgets/icon_badge.dart';
+import '../widgets/section_title.dart';
 
 /// Displays detailed information about a specific plant.
 ///
@@ -30,11 +34,18 @@ class PlantDetailScreen extends StatelessWidget {
                   children: [
                     _buildInfoCards(plant, colorScheme),
                     const SizedBox(height: 24),
-                    _buildSectionTitle('Care Log', Icons.history_rounded, colorScheme),
+                    SectionTitle(
+                      title: 'Care Log',
+                      icon: Icons.history_rounded,
+                      iconColor: colorScheme.secondary,
+                    ),
                     const SizedBox(height: 12),
                     _buildCareLog(colorScheme),
                     const SizedBox(height: 24),
-                    _buildSectionTitle('Care Tips', Icons.tips_and_updates_outlined, colorScheme),
+                    const SectionTitle(
+                      title: 'Care Tips',
+                      icon: Icons.tips_and_updates_outlined,
+                    ),
                     const SizedBox(height: 12),
                     _buildCareTips(colorScheme),
                     if (plant.healthStatus != PlantHealthStatus.healthy) ...[
@@ -139,6 +150,7 @@ class PlantDetailScreen extends StatelessWidget {
             'Indirect',
             Icons.wb_sunny_outlined,
             colorScheme,
+            iconColor: colorScheme.secondary,
           ),
         ),
         const SizedBox(width: 10),
@@ -159,8 +171,9 @@ class PlantDetailScreen extends StatelessWidget {
     String label,
     String value,
     IconData icon,
-    ColorScheme colorScheme,
-  ) {
+    ColorScheme colorScheme, {
+    Color? iconColor,
+  }) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -172,7 +185,7 @@ class PlantDetailScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(icon, size: 22, color: colorScheme.primary),
+          Icon(icon, size: 22, color: iconColor ?? colorScheme.primary),
           const SizedBox(height: 8),
           Text(
             value,
@@ -195,29 +208,6 @@ class PlantDetailScreen extends StatelessWidget {
     );
   }
 
-  /// Builds a section title row.
-  Widget _buildSectionTitle(
-    String title,
-    IconData icon,
-    ColorScheme colorScheme,
-  ) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: colorScheme.primary),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: TextStyle(
-            fontFamily: 'Georgia',
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: colorScheme.onSurface,
-          ),
-        ),
-      ],
-    );
-  }
-
   /// Builds the care log timeline.
   Widget _buildCareLog(ColorScheme colorScheme) {
     // TODO: Replace with actual care log data.
@@ -230,26 +220,12 @@ class PlantDetailScreen extends StatelessWidget {
 
     return Column(
       children: logs
-          .map((log) => Container(
-                margin: const EdgeInsets.only(bottom: 10),
+          .map((log) => DetectooCard(
+                elevation: 0.5,
                 padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: colorScheme.surface,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-                  ),
-                ),
                 child: Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: colorScheme.primaryContainer.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(log.icon, size: 18, color: colorScheme.primary),
-                    ),
+                    IconBadge(icon: log.icon),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Text(
@@ -326,28 +302,13 @@ class PlantDetailScreen extends StatelessWidget {
     Plant plant,
     ColorScheme colorScheme,
   ) {
-    return SizedBox(
-      width: double.infinity,
-      height: 50,
-      child: ElevatedButton.icon(
-        onPressed: () {
-          Navigator.pushNamed(context, Routes.recovery, arguments: plant);
-        },
-        icon: const Icon(Icons.healing_rounded),
-        label: const Text('View Recovery Plan'),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: colorScheme.primary,
-          foregroundColor: colorScheme.onPrimary,
-          elevation: 1,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          textStyle: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
+    return DetectooButton(
+      label: 'View Recovery Plan',
+      icon: Icons.healing_rounded,
+      color: colorScheme.secondary,
+      onPressed: () {
+        Navigator.pushNamed(context, Routes.recovery, arguments: plant);
+      },
     );
   }
 }

@@ -28,6 +28,11 @@ class _$TaskSerializer implements StructuredSerializer<Task> {
       ),
       'done',
       serializers.serialize(object.done, specifiedType: const FullType(bool)),
+      'dueDate',
+      serializers.serialize(
+        object.dueDate,
+        specifiedType: const FullType(String),
+      ),
     ];
 
     return result;
@@ -63,6 +68,14 @@ class _$TaskSerializer implements StructuredSerializer<Task> {
                   )!
                   as bool;
           break;
+        case 'dueDate':
+          result.dueDate =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )!
+                  as String;
+          break;
       }
     }
 
@@ -75,11 +88,14 @@ class _$Task extends Task {
   final String title;
   @override
   final bool done;
+  @override
+  final String dueDate;
 
   factory _$Task([void Function(TaskBuilder)? updates]) =>
       (TaskBuilder()..update(updates))._build();
 
-  _$Task._({required this.title, required this.done}) : super._();
+  _$Task._({required this.title, required this.done, required this.dueDate})
+    : super._();
   @override
   Task rebuild(void Function(TaskBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -90,7 +106,10 @@ class _$Task extends Task {
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is Task && title == other.title && done == other.done;
+    return other is Task &&
+        title == other.title &&
+        done == other.done &&
+        dueDate == other.dueDate;
   }
 
   @override
@@ -98,6 +117,7 @@ class _$Task extends Task {
     var _$hash = 0;
     _$hash = $jc(_$hash, title.hashCode);
     _$hash = $jc(_$hash, done.hashCode);
+    _$hash = $jc(_$hash, dueDate.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -106,7 +126,8 @@ class _$Task extends Task {
   String toString() {
     return (newBuiltValueToStringHelper(r'Task')
           ..add('title', title)
-          ..add('done', done))
+          ..add('done', done)
+          ..add('dueDate', dueDate))
         .toString();
   }
 }
@@ -122,6 +143,10 @@ class TaskBuilder implements Builder<Task, TaskBuilder> {
   bool? get done => _$this._done;
   set done(bool? done) => _$this._done = done;
 
+  String? _dueDate;
+  String? get dueDate => _$this._dueDate;
+  set dueDate(String? dueDate) => _$this._dueDate = dueDate;
+
   TaskBuilder();
 
   TaskBuilder get _$this {
@@ -129,6 +154,7 @@ class TaskBuilder implements Builder<Task, TaskBuilder> {
     if ($v != null) {
       _title = $v.title;
       _done = $v.done;
+      _dueDate = $v.dueDate;
       _$v = null;
     }
     return this;
@@ -153,6 +179,11 @@ class TaskBuilder implements Builder<Task, TaskBuilder> {
         _$Task._(
           title: BuiltValueNullFieldError.checkNotNull(title, r'Task', 'title'),
           done: BuiltValueNullFieldError.checkNotNull(done, r'Task', 'done'),
+          dueDate: BuiltValueNullFieldError.checkNotNull(
+            dueDate,
+            r'Task',
+            'dueDate',
+          ),
         );
     replace(_$result);
     return _$result;
