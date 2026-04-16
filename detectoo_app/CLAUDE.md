@@ -27,16 +27,19 @@ detectoo_app
 │   │   │   ├── reminder.dart      # Plant care reminder
 │   │   │   ├── scan_result.dart   # Scan result + DetectedIssue
 │   │   │   ├── serializers.dart   # Central serializer registry (StandardJsonPlugin)
-│   │   │   └── task.dart          # Task/todo item
+│   │   │   ├── task.dart          # Task/todo item with due date
+│   │   │   └── user.dart          # User profile model
 │   │   ├── providers/             # Riverpod providers for state management
 │   │   ├── widgets/
 │   │   │   ├── bottom_nav_bar.dart  # Bottom navigation shell (Home, Plants, Scan, Profile tabs)
 │   │   │   ├── detectoo_button.dart # Reusable full-width elevated/outlined button
 │   │   │   ├── detectoo_card.dart   # Reusable bordered card container
+│   │   │   ├── gradient_banner.dart # Reusable gradient header banner with decorative elements
 │   │   │   ├── icon_badge.dart      # Reusable icon in a rounded colored container
 │   │   │   ├── section_title.dart   # Reusable section heading with icon
 │   │   │   └── status_chip.dart     # Reusable pill-shaped colored status badge
 │   │   └── screens/
+│   │       ├── splash_screen.dart       # Animated splash screen with staggered animations
 │   │       ├── login_screen.dart        # App login screen
 │   │       ├── home_screen.dart         # Dashboard of the application
 │   │       ├── profile_screen.dart      # User profile screen
@@ -104,7 +107,7 @@ See [DESIGN.md](DESIGN.md) for UI/design guidelines (typography, color palette, 
 - **Entrypoint**: `lib/main.dart` — wraps `DetectooApp` in a Riverpod `ProviderScope`
 - **App shell**: `lib/src/app.dart` — `MaterialApp` with Material 3, green theme, named routes
 - **Routing**: `lib/src/routes.dart` — `Routes` class with all route name constants
-- **Navigation**: Login → `BottomNavBar` (wraps Home, Plants, Scan, Profile tabs via `IndexedStack`). Recovery is a standalone route navigated to from within other screens
+- **Navigation**: Splash → Login → `BottomNavBar` (wraps Home, Plants, Scan, Profile tabs via `IndexedStack`). Plant Detail and Recovery are standalone routes navigated to from within other screens
 - **State management**: Riverpod (`flutter_riverpod`). Providers live in `lib/src/providers/`. Screens use `ConsumerWidget` / `ConsumerStatefulWidget` to read providers
 - **Data models**: `built_value` + `built_collection` for immutable, JSON-serializable classes with code generation via `build_runner`
 - **SDK**: Dart ^3.11.4, uses Material Design 3
