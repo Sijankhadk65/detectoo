@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../models/plant.dart';
 import '../models/recovery_plan.dart';
-import '../widgets/icon_badge.dart';
+import '../widgets/gradient_banner.dart';
 import '../widgets/section_title.dart';
 import '../widgets/status_chip.dart';
 
@@ -150,52 +150,69 @@ class RecoveryScreen extends StatelessWidget {
     RecoveryPlan plan,
     ColorScheme colorScheme,
   ) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: colorScheme.primaryContainer.withValues(alpha: 0.25),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        children: [
-          IconBadge(
-            icon: Icons.healing_rounded,
-            iconSize: 36,
-            padding: 14,
-            borderRadius: 16,
-            backgroundColor:
-                colorScheme.primaryContainer.withValues(alpha: 0.5),
-          ),
-          const SizedBox(height: 14),
-          if (plant != null) ...[
-            Text(
-              plant.name,
-              style: TextStyle(
-                fontFamily: 'Georgia',
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: colorScheme.onSurface,
+    final sevColor = _severityColor(plan.severity);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: GradientBanner(
+        colors: [colorScheme.primary, const Color(0xFF00695C)],
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.healing_rounded,
+                size: 36,
+                color: Colors.white,
               ),
             ),
-            const SizedBox(height: 4),
-          ],
-          Text(
-            plan.condition,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: colorScheme.onSurface.withValues(alpha: 0.7),
+            const SizedBox(height: 14),
+            if (plant != null) ...[
+              Text(
+                plant.name,
+                style: const TextStyle(
+                  fontFamily: 'Georgia',
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 4),
+            ],
+            Text(
+              plan.condition,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Colors.white.withValues(alpha: 0.85),
+              ),
             ),
-          ),
-          const SizedBox(height: 10),
-          StatusChip(
-            label: '${plan.severity} Severity',
-            color: _severityColor(plan.severity),
-            showBorder: true,
-          ),
-        ],
+            const SizedBox(height: 10),
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+              decoration: BoxDecoration(
+                color: sevColor.withValues(alpha: 0.25),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: sevColor.withValues(alpha: 0.4),
+                ),
+              ),
+              child: Text(
+                '${plan.severity} Severity',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -249,7 +266,8 @@ class RecoveryScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.timeline_rounded, size: 20, color: colorScheme.primary),
+              Icon(Icons.timeline_rounded,
+                  size: 20, color: colorScheme.secondary),
               const SizedBox(width: 8),
               Text(
                 'Recovery Progress',
@@ -266,7 +284,7 @@ class RecoveryScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: colorScheme.primary,
+                  color: colorScheme.secondary,
                 ),
               ),
             ],
@@ -278,8 +296,9 @@ class RecoveryScreen extends StatelessWidget {
               value: plan.progress,
               minHeight: 10,
               backgroundColor:
-                  colorScheme.primaryContainer.withValues(alpha: 0.3),
-              valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+                  colorScheme.secondaryContainer.withValues(alpha: 0.5),
+              valueColor:
+                  AlwaysStoppedAnimation<Color>(colorScheme.secondary),
             ),
           ),
           const SizedBox(height: 14),
@@ -365,7 +384,7 @@ class RecoveryScreen extends StatelessWidget {
                       height: 28,
                       decoration: BoxDecoration(
                         color: step.completed
-                            ? colorScheme.primary
+                            ? colorScheme.secondary
                             : colorScheme.primaryContainer
                                 .withValues(alpha: 0.4),
                         shape: BoxShape.circle,
@@ -392,7 +411,7 @@ class RecoveryScreen extends StatelessWidget {
                         child: Container(
                           width: 2,
                           color: step.completed
-                              ? colorScheme.primary.withValues(alpha: 0.3)
+                              ? colorScheme.secondary.withValues(alpha: 0.3)
                               : colorScheme.outlineVariant
                                   .withValues(alpha: 0.3),
                         ),
@@ -408,12 +427,13 @@ class RecoveryScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: step.completed
-                        ? colorScheme.primaryContainer.withValues(alpha: 0.12)
+                        ? colorScheme.secondaryContainer
+                            .withValues(alpha: 0.15)
                         : colorScheme.surface,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
                       color: step.completed
-                          ? colorScheme.primary.withValues(alpha: 0.2)
+                          ? colorScheme.secondary.withValues(alpha: 0.25)
                           : colorScheme.outlineVariant.withValues(alpha: 0.5),
                     ),
                   ),
@@ -441,7 +461,7 @@ class RecoveryScreen extends StatelessWidget {
                           if (step.completed)
                             StatusChip(
                               label: 'Done',
-                              color: colorScheme.primary,
+                              color: colorScheme.secondary,
                             ),
                         ],
                       ),

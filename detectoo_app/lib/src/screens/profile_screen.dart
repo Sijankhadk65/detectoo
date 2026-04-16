@@ -63,59 +63,117 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  /// Builds the profile header with avatar, name, and email.
+  /// Builds the profile header with gradient background, avatar, name,
+  /// and email.
   Widget _buildHeader(ColorScheme colorScheme, User? user) {
-    return Center(
-      child: Column(
-        children: [
-          Container(
-            width: 88,
-            height: 88,
-            decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withValues(alpha: 0.4),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.person_rounded,
-              size: 44,
-              color: colorScheme.primary,
-            ),
-          ),
-          const SizedBox(height: 14),
-          Text(
-            user?.name ?? 'Plant Lover',
-            style: TextStyle(
-              fontFamily: 'Georgia',
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            user?.email ?? '',
-            style: TextStyle(
-              fontSize: 14,
-              color: colorScheme.onSurface.withValues(alpha: 0.5),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              'Member since ${user?.memberSince ?? ''}',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: colorScheme.primary,
-              ),
-            ),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 32),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            colorScheme.primary,
+            const Color(0xFF00897B),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.primary.withValues(alpha: 0.3),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
         ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Positioned(
+              top: -20,
+              right: -10,
+              child: Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.07),
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: -30,
+              left: -20,
+              child: Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.05),
+                ),
+              ),
+            ),
+            Column(
+              children: [
+                Container(
+                  width: 88,
+                  height: 88,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      width: 2,
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.person_rounded,
+                    size: 44,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  user?.name ?? 'Plant Lover',
+                  style: const TextStyle(
+                    fontFamily: 'Georgia',
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  user?.email ?? '',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white.withValues(alpha: 0.75),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    'Member since ${user?.memberSince ?? ''}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white.withValues(alpha: 0.9),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -131,11 +189,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         const SizedBox(width: 10),
         Expanded(
             child: _buildStatCard(
-                '4', 'Healthy', Icons.favorite_rounded, colorScheme)),
+                '4', 'Healthy', Icons.favorite_rounded, colorScheme,
+                iconColor: colorScheme.secondary)),
         const SizedBox(width: 10),
         Expanded(
             child: _buildStatCard(
-                '3', 'Recovering', Icons.healing_rounded, colorScheme)),
+                '3', 'Recovering', Icons.healing_rounded, colorScheme,
+                iconColor: const Color(0xFFFF6D00))),
       ],
     );
   }
@@ -145,14 +205,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     String value,
     String label,
     IconData icon,
-    ColorScheme colorScheme,
-  ) {
+    ColorScheme colorScheme, {
+    Color? iconColor,
+  }) {
     return DetectooCard(
       bottomMargin: 0,
       padding: const EdgeInsets.symmetric(vertical: 18),
       child: Column(
         children: [
-          Icon(icon, size: 22, color: colorScheme.primary),
+          Icon(icon, size: 22, color: iconColor ?? colorScheme.primary),
           const SizedBox(height: 8),
           Text(
             value,
@@ -248,7 +309,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeThumbColor: colorScheme.primary,
+            activeThumbColor: colorScheme.secondary,
+            activeTrackColor: colorScheme.secondaryContainer,
           ),
         ],
       ),
