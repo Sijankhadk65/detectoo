@@ -1,0 +1,22 @@
+meta {
+  name: Update Recovery Plan
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/recovery-plan/1
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "progress": 0.5,
+    "summary": "Recovery progressing — halfway through"
+  }
+}

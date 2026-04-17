@@ -1,0 +1,21 @@
+meta {
+  name: List Reminders
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/reminders?page=1&items_per_page=10
+  body: none
+  auth: bearer
+}
+
+params:query {
+  page: 1
+  items_per_page: 10
+  ~plant_id: 1
+}
+
+auth:bearer {
+  token: {{token}}
+}

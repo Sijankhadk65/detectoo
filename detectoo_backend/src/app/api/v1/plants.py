@@ -35,11 +35,6 @@ async def create_plant(
 
 
 @router.get("/plants", response_model=PaginatedListResponse[PlantRead])
-@cache(
-    key_prefix="user_{user_id}_plants:page_{page}:items_per_page:{items_per_page}",
-    resource_id_name="user_id",
-    expiration=60,
-)
 async def read_plants(
     request: Request,
     current_user: Annotated[dict, Depends(get_current_user)],

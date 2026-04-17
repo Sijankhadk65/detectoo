@@ -1,0 +1,21 @@
+meta {
+  name: Toggle Step
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{baseUrl}}/recovery-plan/1/step/2
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "completed": true
+  }
+}
