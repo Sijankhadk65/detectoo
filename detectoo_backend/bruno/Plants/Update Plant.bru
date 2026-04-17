@@ -1,0 +1,22 @@
+meta {
+  name: Update Plant
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/plant/1
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "health_status": "needsAttention",
+    "last_watered": "2026-04-17T09:30:00Z"
+  }
+}

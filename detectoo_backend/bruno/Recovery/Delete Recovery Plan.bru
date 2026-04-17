@@ -1,0 +1,15 @@
+meta {
+  name: Delete Recovery Plan
+  type: http
+  seq: 6
+}
+
+delete {
+  url: {{baseUrl}}/recovery-plan/1
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

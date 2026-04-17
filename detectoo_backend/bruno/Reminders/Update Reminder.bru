@@ -1,0 +1,21 @@
+meta {
+  name: Update Reminder
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/reminder/1
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "time": "2026-04-19T09:00:00Z"
+  }
+}

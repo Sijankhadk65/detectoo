@@ -1,0 +1,15 @@
+meta {
+  name: Get Care Task
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/care-task/1
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

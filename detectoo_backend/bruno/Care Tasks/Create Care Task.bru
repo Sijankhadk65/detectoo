@@ -1,0 +1,30 @@
+meta {
+  name: Create Care Task
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/care-task
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "title": "Repot basil",
+    "due_date": "2026-04-20T08:00:00Z",
+    "done": false,
+    "plant_id": 3
+  }
+}
+
+script:post-response {
+  if (res.status === 201 && res.body.id) {
+    bru.setEnvVar("care_task_id", res.body.id);
+  }
+}

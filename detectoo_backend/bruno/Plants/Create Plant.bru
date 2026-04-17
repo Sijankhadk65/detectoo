@@ -1,0 +1,30 @@
+meta {
+  name: Create Plant
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/plant
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Pothos",
+    "health_status": "healthy",
+    "icon_code_point": 59540,
+    "last_watered": "2026-04-17T08:00:00Z"
+  }
+}
+
+script:post-response {
+  if (res.status === 201 && res.body.id) {
+    bru.setEnvVar("plant_id", res.body.id);
+  }
+}
