@@ -5,10 +5,25 @@ from crudadmin.admin_interface.model_view import PasswordTransformer
 from pydantic import BaseModel, Field
 
 from ..core.security import get_password_hash
+from ..models.care_task import CareTask
+from ..models.plant import Plant
 from ..models.post import Post
+from ..models.recovery import RecoveryPlan, RecoveryStep
+from ..models.reminder import Reminder
+from ..models.scan import Scan
 from ..models.tier import Tier
 from ..models.user import User
+from ..schemas.care_task import CareTaskCreateInternal, CareTaskUpdate
+from ..schemas.plant import PlantCreate, PlantUpdate
 from ..schemas.post import PostUpdate
+from ..schemas.recovery import (
+    RecoveryPlanCreateInternal,
+    RecoveryPlanUpdate,
+    RecoveryStepCreateInternal,
+    RecoveryStepUpdate,
+)
+from ..schemas.reminder import ReminderCreateInternal, ReminderUpdate
+from ..schemas.scan import ScanCreateInternal, ScanUpdate
 from ..schemas.tier import TierCreate, TierUpdate
 from ..schemas.user import UserCreate, UserCreateInternal, UserUpdate
 
@@ -57,5 +72,47 @@ def register_admin_views(admin: CRUDAdmin) -> None:
         model=Post,
         create_schema=PostCreateAdmin,
         update_schema=PostUpdate,
+        allowed_actions={"view", "create", "update", "delete"},
+    )
+
+    admin.add_view(
+        model=Plant,
+        create_schema=PlantCreate,
+        update_schema=PlantUpdate,
+        allowed_actions={"view", "create", "update", "delete"},
+    )
+
+    admin.add_view(
+        model=Scan,
+        create_schema=ScanCreateInternal,
+        update_schema=ScanUpdate,
+        allowed_actions={"view", "create", "update", "delete"},
+    )
+
+    admin.add_view(
+        model=RecoveryPlan,
+        create_schema=RecoveryPlanCreateInternal,
+        update_schema=RecoveryPlanUpdate,
+        allowed_actions={"view", "create", "update", "delete"},
+    )
+
+    admin.add_view(
+        model=RecoveryStep,
+        create_schema=RecoveryStepCreateInternal,
+        update_schema=RecoveryStepUpdate,
+        allowed_actions={"view", "create", "update", "delete"},
+    )
+
+    admin.add_view(
+        model=Reminder,
+        create_schema=ReminderCreateInternal,
+        update_schema=ReminderUpdate,
+        allowed_actions={"view", "create", "update", "delete"},
+    )
+
+    admin.add_view(
+        model=CareTask,
+        create_schema=CareTaskCreateInternal,
+        update_schema=CareTaskUpdate,
         allowed_actions={"view", "create", "update", "delete"},
     )
