@@ -7,6 +7,9 @@ part 'plant.g.dart';
 
 /// Represents a plant owned by the user.
 abstract class Plant implements Built<Plant, PlantBuilder> {
+  /// Server-assigned identifier used for update/delete/detail calls.
+  int get id;
+
   /// The plant name.
   String get name;
 
@@ -16,13 +19,50 @@ abstract class Plant implements Built<Plant, PlantBuilder> {
   /// The health status of the plant.
   PlantHealthStatus get healthStatus;
 
-  /// When the plant was last watered (e.g. "2 hours ago").
-  String get lastWatered;
+  /// When the plant was last watered, or `null` if it hasn't been
+  /// watered yet. Comes straight from the backend; format for display
+  /// with [lastWateredLabel].
+  DateTime? get lastWatered;
 
   /// Returns the [IconData] for this plant's icon.
   @BuiltValueField(serialize: false)
   IconData get iconData =>
       IconData(iconCodePoint, fontFamily: 'MaterialIcons');
+
+  /// Human-readable "time ago" label for [lastWatered].
+  ///
+  /// Examples: "just now", "2 hours ago", "Yesterday", "3 days ago",
+  /// or "Never" when no watering has been recorded.
+  @BuiltValueField(serialize: false)
+  String get lastWateredLabel {
+    final watered = lastWatered;
+    if (watered == null) return 'Never';
+
+    final now = DateTime.now();
+    final diff = now.difference(watered);
+
+    if (diff.inSeconds < 60) return 'just now';
+    if (diff.inMinutes < 60) {
+      final m = diff.inMinutes;
+      return m == 1 ? '1 minute ago' : '$m minutes ago';
+    }
+    if (diff.inHours < 24) {
+      final h = diff.inHours;
+      return h == 1 ? '1 hour ago' : '$h hours ago';
+    }
+    if (diff.inDays == 1) return 'Yesterday';
+    if (diff.inDays < 7) return '${diff.inDays} days ago';
+    if (diff.inDays < 30) {
+      final w = (diff.inDays / 7).floor();
+      return w == 1 ? '1 week ago' : '$w weeks ago';
+    }
+    if (diff.inDays < 365) {
+      final mo = (diff.inDays / 30).floor();
+      return mo == 1 ? '1 month ago' : '$mo months ago';
+    }
+    final y = (diff.inDays / 365).floor();
+    return y == 1 ? '1 year ago' : '$y years ago';
+  }
 
   Plant._();
 

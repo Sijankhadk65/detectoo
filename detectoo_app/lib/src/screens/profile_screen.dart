@@ -28,7 +28,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final user = ref.watch(authProvider);
+    final user = ref.watch(authProvider).valueOrNull;
 
     return Scaffold(
       body: SafeArea(
@@ -404,8 +404,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       icon: Icons.logout_rounded,
       outlined: true,
       color: const Color(0xFFC62828),
-      onPressed: () {
-        ref.read(authProvider.notifier).signOut();
+      onPressed: () async {
+        await ref.read(authProvider.notifier).signOut();
+        if (!context.mounted) return;
         Navigator.pushNamedAndRemoveUntil(
           context,
           Routes.login,

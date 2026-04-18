@@ -22,6 +22,10 @@ class _$RecoveryPlanSerializer implements StructuredSerializer<RecoveryPlan> {
     FullType specifiedType = FullType.unspecified,
   }) {
     final result = <Object?>[
+      'id',
+      serializers.serialize(object.id, specifiedType: const FullType(int)),
+      'plantId',
+      serializers.serialize(object.plantId, specifiedType: const FullType(int)),
       'condition',
       serializers.serialize(
         object.condition,
@@ -45,12 +49,12 @@ class _$RecoveryPlanSerializer implements StructuredSerializer<RecoveryPlan> {
       'startedOn',
       serializers.serialize(
         object.startedOn,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType(DateTime),
       ),
-      'estimatedRecovery',
+      'isActive',
       serializers.serialize(
-        object.estimatedRecovery,
-        specifiedType: const FullType(String),
+        object.isActive,
+        specifiedType: const FullType(bool),
       ),
       'steps',
       serializers.serialize(
@@ -81,7 +85,21 @@ class _$RecoveryPlanSerializer implements StructuredSerializer<RecoveryPlan> {
         ]),
       ),
     ];
-
+    Object? value;
+    value = object.scanId;
+    if (value != null) {
+      result
+        ..add('scanId')
+        ..add(serializers.serialize(value, specifiedType: const FullType(int)));
+    }
+    value = object.estimatedRecovery;
+    if (value != null) {
+      result
+        ..add('estimatedRecovery')
+        ..add(
+          serializers.serialize(value, specifiedType: const FullType(String)),
+        );
+    }
     return result;
   }
 
@@ -99,6 +117,27 @@ class _$RecoveryPlanSerializer implements StructuredSerializer<RecoveryPlan> {
       iterator.moveNext();
       final Object? value = iterator.current;
       switch (key) {
+        case 'id':
+          result.id =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(int),
+                  )!
+                  as int;
+          break;
+        case 'plantId':
+          result.plantId =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(int),
+                  )!
+                  as int;
+          break;
+        case 'scanId':
+          result.scanId =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int?;
+          break;
         case 'condition':
           result.condition =
               serializers.deserialize(
@@ -135,17 +174,25 @@ class _$RecoveryPlanSerializer implements StructuredSerializer<RecoveryPlan> {
           result.startedOn =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(String),
+                    specifiedType: const FullType(DateTime),
                   )!
-                  as String;
+                  as DateTime;
           break;
         case 'estimatedRecovery':
           result.estimatedRecovery =
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(String),
+                  )
+                  as String?;
+          break;
+        case 'isActive':
+          result.isActive =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
                   )!
-                  as String;
+                  as bool;
           break;
         case 'steps':
           result.steps.replace(
@@ -211,6 +258,13 @@ class _$RecoveryStepSerializer implements StructuredSerializer<RecoveryStep> {
     FullType specifiedType = FullType.unspecified,
   }) {
     final result = <Object?>[
+      'id',
+      serializers.serialize(object.id, specifiedType: const FullType(int)),
+      'recoveryPlanId',
+      serializers.serialize(
+        object.recoveryPlanId,
+        specifiedType: const FullType(int),
+      ),
       'title',
       serializers.serialize(
         object.title,
@@ -231,6 +285,11 @@ class _$RecoveryStepSerializer implements StructuredSerializer<RecoveryStep> {
         object.completed,
         specifiedType: const FullType(bool),
       ),
+      'stepOrder',
+      serializers.serialize(
+        object.stepOrder,
+        specifiedType: const FullType(int),
+      ),
     ];
 
     return result;
@@ -250,6 +309,22 @@ class _$RecoveryStepSerializer implements StructuredSerializer<RecoveryStep> {
       iterator.moveNext();
       final Object? value = iterator.current;
       switch (key) {
+        case 'id':
+          result.id =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(int),
+                  )!
+                  as int;
+          break;
+        case 'recoveryPlanId':
+          result.recoveryPlanId =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(int),
+                  )!
+                  as int;
+          break;
         case 'title':
           result.title =
               serializers.deserialize(
@@ -282,6 +357,14 @@ class _$RecoveryStepSerializer implements StructuredSerializer<RecoveryStep> {
                   )!
                   as bool;
           break;
+        case 'stepOrder':
+          result.stepOrder =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(int),
+                  )!
+                  as int;
+          break;
       }
     }
 
@@ -291,6 +374,12 @@ class _$RecoveryStepSerializer implements StructuredSerializer<RecoveryStep> {
 
 class _$RecoveryPlan extends RecoveryPlan {
   @override
+  final int id;
+  @override
+  final int plantId;
+  @override
+  final int? scanId;
+  @override
   final String condition;
   @override
   final String severity;
@@ -299,9 +388,11 @@ class _$RecoveryPlan extends RecoveryPlan {
   @override
   final double progress;
   @override
-  final String startedOn;
+  final DateTime startedOn;
   @override
-  final String estimatedRecovery;
+  final String? estimatedRecovery;
+  @override
+  final bool isActive;
   @override
   final BuiltList<RecoveryStep> steps;
   @override
@@ -315,12 +406,16 @@ class _$RecoveryPlan extends RecoveryPlan {
       (RecoveryPlanBuilder()..update(updates))._build();
 
   _$RecoveryPlan._({
+    required this.id,
+    required this.plantId,
+    this.scanId,
     required this.condition,
     required this.severity,
     required this.summary,
     required this.progress,
     required this.startedOn,
-    required this.estimatedRecovery,
+    this.estimatedRecovery,
+    required this.isActive,
     required this.steps,
     required this.doList,
     required this.dontList,
@@ -337,12 +432,16 @@ class _$RecoveryPlan extends RecoveryPlan {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is RecoveryPlan &&
+        id == other.id &&
+        plantId == other.plantId &&
+        scanId == other.scanId &&
         condition == other.condition &&
         severity == other.severity &&
         summary == other.summary &&
         progress == other.progress &&
         startedOn == other.startedOn &&
         estimatedRecovery == other.estimatedRecovery &&
+        isActive == other.isActive &&
         steps == other.steps &&
         doList == other.doList &&
         dontList == other.dontList &&
@@ -352,12 +451,16 @@ class _$RecoveryPlan extends RecoveryPlan {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, id.hashCode);
+    _$hash = $jc(_$hash, plantId.hashCode);
+    _$hash = $jc(_$hash, scanId.hashCode);
     _$hash = $jc(_$hash, condition.hashCode);
     _$hash = $jc(_$hash, severity.hashCode);
     _$hash = $jc(_$hash, summary.hashCode);
     _$hash = $jc(_$hash, progress.hashCode);
     _$hash = $jc(_$hash, startedOn.hashCode);
     _$hash = $jc(_$hash, estimatedRecovery.hashCode);
+    _$hash = $jc(_$hash, isActive.hashCode);
     _$hash = $jc(_$hash, steps.hashCode);
     _$hash = $jc(_$hash, doList.hashCode);
     _$hash = $jc(_$hash, dontList.hashCode);
@@ -369,12 +472,16 @@ class _$RecoveryPlan extends RecoveryPlan {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'RecoveryPlan')
+          ..add('id', id)
+          ..add('plantId', plantId)
+          ..add('scanId', scanId)
           ..add('condition', condition)
           ..add('severity', severity)
           ..add('summary', summary)
           ..add('progress', progress)
           ..add('startedOn', startedOn)
           ..add('estimatedRecovery', estimatedRecovery)
+          ..add('isActive', isActive)
           ..add('steps', steps)
           ..add('doList', doList)
           ..add('dontList', dontList)
@@ -386,6 +493,18 @@ class _$RecoveryPlan extends RecoveryPlan {
 class RecoveryPlanBuilder
     implements Builder<RecoveryPlan, RecoveryPlanBuilder> {
   _$RecoveryPlan? _$v;
+
+  int? _id;
+  int? get id => _$this._id;
+  set id(int? id) => _$this._id = id;
+
+  int? _plantId;
+  int? get plantId => _$this._plantId;
+  set plantId(int? plantId) => _$this._plantId = plantId;
+
+  int? _scanId;
+  int? get scanId => _$this._scanId;
+  set scanId(int? scanId) => _$this._scanId = scanId;
 
   String? _condition;
   String? get condition => _$this._condition;
@@ -403,14 +522,18 @@ class RecoveryPlanBuilder
   double? get progress => _$this._progress;
   set progress(double? progress) => _$this._progress = progress;
 
-  String? _startedOn;
-  String? get startedOn => _$this._startedOn;
-  set startedOn(String? startedOn) => _$this._startedOn = startedOn;
+  DateTime? _startedOn;
+  DateTime? get startedOn => _$this._startedOn;
+  set startedOn(DateTime? startedOn) => _$this._startedOn = startedOn;
 
   String? _estimatedRecovery;
   String? get estimatedRecovery => _$this._estimatedRecovery;
   set estimatedRecovery(String? estimatedRecovery) =>
       _$this._estimatedRecovery = estimatedRecovery;
+
+  bool? _isActive;
+  bool? get isActive => _$this._isActive;
+  set isActive(bool? isActive) => _$this._isActive = isActive;
 
   ListBuilder<RecoveryStep>? _steps;
   ListBuilder<RecoveryStep> get steps =>
@@ -437,12 +560,16 @@ class RecoveryPlanBuilder
   RecoveryPlanBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _id = $v.id;
+      _plantId = $v.plantId;
+      _scanId = $v.scanId;
       _condition = $v.condition;
       _severity = $v.severity;
       _summary = $v.summary;
       _progress = $v.progress;
       _startedOn = $v.startedOn;
       _estimatedRecovery = $v.estimatedRecovery;
+      _isActive = $v.isActive;
       _steps = $v.steps.toBuilder();
       _doList = $v.doList.toBuilder();
       _dontList = $v.dontList.toBuilder();
@@ -471,6 +598,17 @@ class RecoveryPlanBuilder
       _$result =
           _$v ??
           _$RecoveryPlan._(
+            id: BuiltValueNullFieldError.checkNotNull(
+              id,
+              r'RecoveryPlan',
+              'id',
+            ),
+            plantId: BuiltValueNullFieldError.checkNotNull(
+              plantId,
+              r'RecoveryPlan',
+              'plantId',
+            ),
+            scanId: scanId,
             condition: BuiltValueNullFieldError.checkNotNull(
               condition,
               r'RecoveryPlan',
@@ -496,10 +634,11 @@ class RecoveryPlanBuilder
               r'RecoveryPlan',
               'startedOn',
             ),
-            estimatedRecovery: BuiltValueNullFieldError.checkNotNull(
-              estimatedRecovery,
+            estimatedRecovery: estimatedRecovery,
+            isActive: BuiltValueNullFieldError.checkNotNull(
+              isActive,
               r'RecoveryPlan',
-              'estimatedRecovery',
+              'isActive',
             ),
             steps: steps.build(),
             doList: doList.build(),
@@ -533,6 +672,10 @@ class RecoveryPlanBuilder
 
 class _$RecoveryStep extends RecoveryStep {
   @override
+  final int id;
+  @override
+  final int recoveryPlanId;
+  @override
   final String title;
   @override
   final String description;
@@ -540,15 +683,20 @@ class _$RecoveryStep extends RecoveryStep {
   final int iconCodePoint;
   @override
   final bool completed;
+  @override
+  final int stepOrder;
 
   factory _$RecoveryStep([void Function(RecoveryStepBuilder)? updates]) =>
       (RecoveryStepBuilder()..update(updates))._build();
 
   _$RecoveryStep._({
+    required this.id,
+    required this.recoveryPlanId,
     required this.title,
     required this.description,
     required this.iconCodePoint,
     required this.completed,
+    required this.stepOrder,
   }) : super._();
   @override
   RecoveryStep rebuild(void Function(RecoveryStepBuilder) updates) =>
@@ -561,19 +709,25 @@ class _$RecoveryStep extends RecoveryStep {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is RecoveryStep &&
+        id == other.id &&
+        recoveryPlanId == other.recoveryPlanId &&
         title == other.title &&
         description == other.description &&
         iconCodePoint == other.iconCodePoint &&
-        completed == other.completed;
+        completed == other.completed &&
+        stepOrder == other.stepOrder;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, id.hashCode);
+    _$hash = $jc(_$hash, recoveryPlanId.hashCode);
     _$hash = $jc(_$hash, title.hashCode);
     _$hash = $jc(_$hash, description.hashCode);
     _$hash = $jc(_$hash, iconCodePoint.hashCode);
     _$hash = $jc(_$hash, completed.hashCode);
+    _$hash = $jc(_$hash, stepOrder.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -581,10 +735,13 @@ class _$RecoveryStep extends RecoveryStep {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'RecoveryStep')
+          ..add('id', id)
+          ..add('recoveryPlanId', recoveryPlanId)
           ..add('title', title)
           ..add('description', description)
           ..add('iconCodePoint', iconCodePoint)
-          ..add('completed', completed))
+          ..add('completed', completed)
+          ..add('stepOrder', stepOrder))
         .toString();
   }
 }
@@ -592,6 +749,15 @@ class _$RecoveryStep extends RecoveryStep {
 class RecoveryStepBuilder
     implements Builder<RecoveryStep, RecoveryStepBuilder> {
   _$RecoveryStep? _$v;
+
+  int? _id;
+  int? get id => _$this._id;
+  set id(int? id) => _$this._id = id;
+
+  int? _recoveryPlanId;
+  int? get recoveryPlanId => _$this._recoveryPlanId;
+  set recoveryPlanId(int? recoveryPlanId) =>
+      _$this._recoveryPlanId = recoveryPlanId;
 
   String? _title;
   String? get title => _$this._title;
@@ -610,15 +776,22 @@ class RecoveryStepBuilder
   bool? get completed => _$this._completed;
   set completed(bool? completed) => _$this._completed = completed;
 
+  int? _stepOrder;
+  int? get stepOrder => _$this._stepOrder;
+  set stepOrder(int? stepOrder) => _$this._stepOrder = stepOrder;
+
   RecoveryStepBuilder();
 
   RecoveryStepBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _id = $v.id;
+      _recoveryPlanId = $v.recoveryPlanId;
       _title = $v.title;
       _description = $v.description;
       _iconCodePoint = $v.iconCodePoint;
       _completed = $v.completed;
+      _stepOrder = $v.stepOrder;
       _$v = null;
     }
     return this;
@@ -641,6 +814,12 @@ class RecoveryStepBuilder
     final _$result =
         _$v ??
         _$RecoveryStep._(
+          id: BuiltValueNullFieldError.checkNotNull(id, r'RecoveryStep', 'id'),
+          recoveryPlanId: BuiltValueNullFieldError.checkNotNull(
+            recoveryPlanId,
+            r'RecoveryStep',
+            'recoveryPlanId',
+          ),
           title: BuiltValueNullFieldError.checkNotNull(
             title,
             r'RecoveryStep',
@@ -660,6 +839,11 @@ class RecoveryStepBuilder
             completed,
             r'RecoveryStep',
             'completed',
+          ),
+          stepOrder: BuiltValueNullFieldError.checkNotNull(
+            stepOrder,
+            r'RecoveryStep',
+            'stepOrder',
           ),
         );
     replace(_$result);

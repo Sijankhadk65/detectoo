@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../models/user.dart';
+import '../providers/auth_provider.dart';
 import '../routes.dart';
 
 /// Splash screen displayed on app launch.
 ///
-/// Shows the Detectoo branding with an animated entrance,
-/// then navigates to the login screen after a short delay.
-class SplashScreen extends StatefulWidget {
+/// Runs the branding animation while [AuthNotifier.build] restores any
+/// persisted session, then routes to Home if a user was restored and
+/// Login otherwise.
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
+class _SplashScreenState extends ConsumerState<SplashScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _logoScale;
@@ -71,10 +75,28 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    Future.delayed(const Duration(milliseconds: 2800), () {
-      if (!mounted) return;
-      Navigator.pushReplacementNamed(context, Routes.login);
-    });
+    _routeAfterSplash();
+  }
+
+  /// Waits for the branding animation and the initial auth check to
+  /// both complete, then replaces this screen with Home or Login.
+  Future<void> _routeAfterSplash() async {
+    final minDelay = Future<void>.delayed(const Duration(milliseconds: 2800));
+    User? user;
+    try {
+      final results = await Future.wait([
+        minDelay,
+        ref.read(authProvider.future),
+      ]);
+      user = results[1] as User?;
+    } catch (_) {
+      await minDelay;
+      user = null;
+    }
+
+    if (!mounted) return;
+    final route = user != null ? Routes.home : Routes.login;
+    Navigator.pushReplacementNamed(context, route);
   }
 
   @override

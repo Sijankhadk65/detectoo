@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/api/api_exception.dart';
 import '../models/scan_result.dart';
+import '../providers/api_providers.dart';
 import '../routes.dart';
 import '../widgets/detectoo_button.dart';
 import '../widgets/detectoo_card.dart';
@@ -14,14 +17,14 @@ import '../widgets/status_chip.dart';
 /// Guides the user through scanning a plant photo, viewing detection
 /// results for pests/diseases, adding the plant to their account,
 /// and starting a recovery process if needed.
-class ScanScreen extends StatefulWidget {
+class ScanScreen extends ConsumerStatefulWidget {
   const ScanScreen({super.key});
 
   @override
-  State<ScanScreen> createState() => _ScanScreenState();
+  ConsumerState<ScanScreen> createState() => _ScanScreenState();
 }
 
-class _ScanScreenState extends State<ScanScreen> {
+class _ScanScreenState extends ConsumerState<ScanScreen> {
   _ScanStage _stage = _ScanStage.capture;
   ScanResult? _result;
 
@@ -648,41 +651,67 @@ class _ScanScreenState extends State<ScanScreen> {
   // State management helpers
   // ---------------------------------------------------------------------------
 
-  /// Simulates starting a scan with mock results.
-  void _startScan() {
+  /// Simulates starting a scan with mock results and persists it to
+  /// the backend via [ScansRepository].
+  Future<void> _startScan() async {
     setState(() {
       _stage = _ScanStage.scanning;
     });
 
     // TODO: Replace with actual camera/gallery + ML scan logic.
-    Future.delayed(const Duration(seconds: 2), () {
+    await Future.delayed(const Duration(seconds: 2));
+    if (!mounted) return;
+
+    final detectedIssues = <DetectedIssue>[
+      DetectedIssue((b) => b
+        ..name = 'Black Spot Fungus'
+        ..description =
+            'Dark spots found on the leaves. This is a common fungal '
+            'infection that spreads through water. Affected leaves may '
+            'turn yellow and drop off if not treated.'
+        ..severity = 'Moderate'
+        ..confidence = 0.92),
+      DetectedIssue((b) => b
+        ..name = 'Aphid Infestation'
+        ..description =
+            'Small green insects found on the underside of leaves. '
+            'They suck sap from the plant and can cause leaves to curl '
+            'and become distorted. Usually treatable with simple methods.'
+        ..severity = 'Mild'
+        ..confidence = 0.85),
+    ];
+
+    try {
+      final saved = await ref.read(scansRepositoryProvider).createScan(
+            plantName: 'Rose Bush',
+            species: 'Rosa gallica',
+            isHealthy: false,
+            issues: detectedIssues,
+          );
       if (!mounted) return;
+      ref.invalidate(scansListProvider);
+      setState(() {
+        _stage = _ScanStage.results;
+        _result = saved;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      final message = error is ApiException
+          ? error.message
+          : 'Could not save the scan. Showing local results only.';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
       setState(() {
         _stage = _ScanStage.results;
         _result = ScanResult((b) => b
+          ..id = 0
           ..plantName = 'Rose Bush'
           ..species = 'Rosa gallica'
           ..isHealthy = false
-          ..issues.addAll([
-            DetectedIssue((b) => b
-              ..name = 'Black Spot Fungus'
-              ..description =
-                  'Dark spots found on the leaves. This is a common fungal '
-                  'infection that spreads through water. Affected leaves may '
-                  'turn yellow and drop off if not treated.'
-              ..severity = 'Moderate'
-              ..confidence = 0.92),
-            DetectedIssue((b) => b
-              ..name = 'Aphid Infestation'
-              ..description =
-                  'Small green insects found on the underside of leaves. '
-                  'They suck sap from the plant and can cause leaves to curl '
-                  'and become distorted. Usually treatable with simple methods.'
-              ..severity = 'Mild'
-              ..confidence = 0.85),
-          ]));
+          ..issues.replace(detectedIssues));
       });
-    });
+    }
   }
 
   /// Resets the scan flow to the capture stage.

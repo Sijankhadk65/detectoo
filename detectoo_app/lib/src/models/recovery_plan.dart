@@ -8,6 +8,15 @@ part 'recovery_plan.g.dart';
 /// A full recovery plan for a plant condition.
 abstract class RecoveryPlan
     implements Built<RecoveryPlan, RecoveryPlanBuilder> {
+  /// Server-assigned identifier. `0` for locally-created mock plans.
+  int get id;
+
+  /// Plant this recovery plan is attached to.
+  int get plantId;
+
+  /// Optional scan that triggered this recovery plan.
+  int? get scanId;
+
   /// The condition being treated.
   String get condition;
 
@@ -20,11 +29,14 @@ abstract class RecoveryPlan
   /// Recovery progress as a value between 0.0 and 1.0.
   double get progress;
 
-  /// When the recovery plan was started (e.g. "Apr 3, 2026").
-  String get startedOn;
+  /// When the recovery plan was started.
+  DateTime get startedOn;
 
-  /// Estimated time to recovery (e.g. "2–3 weeks").
-  String get estimatedRecovery;
+  /// Estimated time to recovery (e.g. "2–3 weeks"), or `null`.
+  String? get estimatedRecovery;
+
+  /// Whether the plan is still being followed.
+  bool get isActive;
 
   /// Ordered list of recovery steps.
   BuiltList<RecoveryStep> get steps;
@@ -38,6 +50,20 @@ abstract class RecoveryPlan
   /// Signs that the plant is improving.
   BuiltList<String> get signsOfImprovement;
 
+  /// Human-readable date label for [startedOn] (e.g. "Apr 3, 2026").
+  @BuiltValueField(serialize: false)
+  String get startedOnLabel {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return '${months[startedOn.month - 1]} ${startedOn.day}, ${startedOn.year}';
+  }
+
+  /// Display-safe estimated recovery (never `null`).
+  @BuiltValueField(serialize: false)
+  String get estimatedRecoveryLabel => estimatedRecovery ?? 'Unknown';
+
   RecoveryPlan._();
 
   factory RecoveryPlan([void Function(RecoveryPlanBuilder) updates]) =
@@ -49,6 +75,12 @@ abstract class RecoveryPlan
 /// A single step in a recovery plan.
 abstract class RecoveryStep
     implements Built<RecoveryStep, RecoveryStepBuilder> {
+  /// Server-assigned identifier. `0` for locally-created mock steps.
+  int get id;
+
+  /// Recovery plan this step belongs to.
+  int get recoveryPlanId;
+
   /// The step title.
   String get title;
 
@@ -60,6 +92,9 @@ abstract class RecoveryStep
 
   /// Whether this step has been completed.
   bool get completed;
+
+  /// Ordering within the plan.
+  int get stepOrder;
 
   /// Returns the [IconData] for this step's icon.
   @BuiltValueField(serialize: false)

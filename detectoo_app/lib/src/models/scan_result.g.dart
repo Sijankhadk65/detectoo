@@ -23,6 +23,8 @@ class _$ScanResultSerializer implements StructuredSerializer<ScanResult> {
     FullType specifiedType = FullType.unspecified,
   }) {
     final result = <Object?>[
+      'id',
+      serializers.serialize(object.id, specifiedType: const FullType(int)),
       'plantName',
       serializers.serialize(
         object.plantName,
@@ -46,7 +48,29 @@ class _$ScanResultSerializer implements StructuredSerializer<ScanResult> {
         ]),
       ),
     ];
-
+    Object? value;
+    value = object.plantId;
+    if (value != null) {
+      result
+        ..add('plantId')
+        ..add(serializers.serialize(value, specifiedType: const FullType(int)));
+    }
+    value = object.imageUrl;
+    if (value != null) {
+      result
+        ..add('imageUrl')
+        ..add(
+          serializers.serialize(value, specifiedType: const FullType(String)),
+        );
+    }
+    value = object.createdAt;
+    if (value != null) {
+      result
+        ..add('createdAt')
+        ..add(
+          serializers.serialize(value, specifiedType: const FullType(DateTime)),
+        );
+    }
     return result;
   }
 
@@ -64,6 +88,14 @@ class _$ScanResultSerializer implements StructuredSerializer<ScanResult> {
       iterator.moveNext();
       final Object? value = iterator.current;
       switch (key) {
+        case 'id':
+          result.id =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(int),
+                  )!
+                  as int;
+          break;
         case 'plantName':
           result.plantName =
               serializers.deserialize(
@@ -98,6 +130,27 @@ class _$ScanResultSerializer implements StructuredSerializer<ScanResult> {
                 )!
                 as BuiltList<Object?>,
           );
+          break;
+        case 'plantId':
+          result.plantId =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int?;
+          break;
+        case 'imageUrl':
+          result.imageUrl =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String?;
+          break;
+        case 'createdAt':
+          result.createdAt =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime?;
           break;
       }
     }
@@ -196,6 +249,8 @@ class _$DetectedIssueSerializer implements StructuredSerializer<DetectedIssue> {
 
 class _$ScanResult extends ScanResult {
   @override
+  final int id;
+  @override
   final String plantName;
   @override
   final String species;
@@ -203,15 +258,25 @@ class _$ScanResult extends ScanResult {
   final bool isHealthy;
   @override
   final BuiltList<DetectedIssue> issues;
+  @override
+  final int? plantId;
+  @override
+  final String? imageUrl;
+  @override
+  final DateTime? createdAt;
 
   factory _$ScanResult([void Function(ScanResultBuilder)? updates]) =>
       (ScanResultBuilder()..update(updates))._build();
 
   _$ScanResult._({
+    required this.id,
     required this.plantName,
     required this.species,
     required this.isHealthy,
     required this.issues,
+    this.plantId,
+    this.imageUrl,
+    this.createdAt,
   }) : super._();
   @override
   ScanResult rebuild(void Function(ScanResultBuilder) updates) =>
@@ -224,19 +289,27 @@ class _$ScanResult extends ScanResult {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is ScanResult &&
+        id == other.id &&
         plantName == other.plantName &&
         species == other.species &&
         isHealthy == other.isHealthy &&
-        issues == other.issues;
+        issues == other.issues &&
+        plantId == other.plantId &&
+        imageUrl == other.imageUrl &&
+        createdAt == other.createdAt;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, id.hashCode);
     _$hash = $jc(_$hash, plantName.hashCode);
     _$hash = $jc(_$hash, species.hashCode);
     _$hash = $jc(_$hash, isHealthy.hashCode);
     _$hash = $jc(_$hash, issues.hashCode);
+    _$hash = $jc(_$hash, plantId.hashCode);
+    _$hash = $jc(_$hash, imageUrl.hashCode);
+    _$hash = $jc(_$hash, createdAt.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -244,16 +317,24 @@ class _$ScanResult extends ScanResult {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'ScanResult')
+          ..add('id', id)
           ..add('plantName', plantName)
           ..add('species', species)
           ..add('isHealthy', isHealthy)
-          ..add('issues', issues))
+          ..add('issues', issues)
+          ..add('plantId', plantId)
+          ..add('imageUrl', imageUrl)
+          ..add('createdAt', createdAt))
         .toString();
   }
 }
 
 class ScanResultBuilder implements Builder<ScanResult, ScanResultBuilder> {
   _$ScanResult? _$v;
+
+  int? _id;
+  int? get id => _$this._id;
+  set id(int? id) => _$this._id = id;
 
   String? _plantName;
   String? get plantName => _$this._plantName;
@@ -272,15 +353,31 @@ class ScanResultBuilder implements Builder<ScanResult, ScanResultBuilder> {
       _$this._issues ??= ListBuilder<DetectedIssue>();
   set issues(ListBuilder<DetectedIssue>? issues) => _$this._issues = issues;
 
+  int? _plantId;
+  int? get plantId => _$this._plantId;
+  set plantId(int? plantId) => _$this._plantId = plantId;
+
+  String? _imageUrl;
+  String? get imageUrl => _$this._imageUrl;
+  set imageUrl(String? imageUrl) => _$this._imageUrl = imageUrl;
+
+  DateTime? _createdAt;
+  DateTime? get createdAt => _$this._createdAt;
+  set createdAt(DateTime? createdAt) => _$this._createdAt = createdAt;
+
   ScanResultBuilder();
 
   ScanResultBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _id = $v.id;
       _plantName = $v.plantName;
       _species = $v.species;
       _isHealthy = $v.isHealthy;
       _issues = $v.issues.toBuilder();
+      _plantId = $v.plantId;
+      _imageUrl = $v.imageUrl;
+      _createdAt = $v.createdAt;
       _$v = null;
     }
     return this;
@@ -305,6 +402,7 @@ class ScanResultBuilder implements Builder<ScanResult, ScanResultBuilder> {
       _$result =
           _$v ??
           _$ScanResult._(
+            id: BuiltValueNullFieldError.checkNotNull(id, r'ScanResult', 'id'),
             plantName: BuiltValueNullFieldError.checkNotNull(
               plantName,
               r'ScanResult',
@@ -321,6 +419,9 @@ class ScanResultBuilder implements Builder<ScanResult, ScanResultBuilder> {
               'isHealthy',
             ),
             issues: issues.build(),
+            plantId: plantId,
+            imageUrl: imageUrl,
+            createdAt: createdAt,
           );
     } catch (_) {
       late String _$failedField;

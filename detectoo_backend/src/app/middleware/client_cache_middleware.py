@@ -35,6 +35,10 @@ class ClientCacheMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         """Process the request and set the `Cache-Control` header in the response.
 
+        JSON API responses (paths under `/api/`) are served with `Cache-Control: no-store`
+        so that clients and intermediaries always fetch fresh data. All other paths
+        receive the configured `public, max-age=<max_age>` directive.
+
         Parameters
         ----------
         request: Request
@@ -46,11 +50,10 @@ class ClientCacheMiddleware(BaseHTTPMiddleware):
         -------
         Response
             The response object with the `Cache-Control` header set.
-
-        Note
-        ----
-            - This method is automatically called by Starlette for processing the request-response cycle.
         """
         response: Response = await call_next(request)
-        response.headers["Cache-Control"] = f"public, max-age={self.max_age}"
+        if request.url.path.startswith("/api/"):
+            response.headers["Cache-Control"] = "no-store"
+        else:
+            response.headers["Cache-Control"] = f"public, max-age={self.max_age}"
         return response
