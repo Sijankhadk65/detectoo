@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/api/api_exception.dart';
 import '../models/plant.dart';
+import '../providers/api_providers.dart';
 import '../routes.dart';
 import '../widgets/detectoo_card.dart';
 import '../widgets/gradient_banner.dart';
@@ -9,85 +12,143 @@ import '../widgets/gradient_banner.dart';
 ///
 /// Each plant card shows the plant name, icon, health status,
 /// and when it was last watered.
-class PlantsScreen extends StatelessWidget {
+class PlantsScreen extends ConsumerWidget {
   const PlantsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
-
-    // TODO: Replace with actual plant data.
-    final plants = [
-      Plant((b) => b
-        ..name = 'Monstera'
-        ..iconCodePoint = Icons.yard_rounded.codePoint
-        ..healthStatus = PlantHealthStatus.healthy
-        ..lastWatered = '2 hours ago'),
-      Plant((b) => b
-        ..name = 'Snake Plant'
-        ..iconCodePoint = Icons.grass_rounded.codePoint
-        ..healthStatus = PlantHealthStatus.healthy
-        ..lastWatered = 'Yesterday'),
-      Plant((b) => b
-        ..name = 'Rose Bush'
-        ..iconCodePoint = Icons.local_florist_rounded.codePoint
-        ..healthStatus = PlantHealthStatus.recovering
-        ..lastWatered = '3 days ago'),
-      Plant((b) => b
-        ..name = 'Fiddle Leaf Fig'
-        ..iconCodePoint = Icons.park_rounded.codePoint
-        ..healthStatus = PlantHealthStatus.needsAttention
-        ..lastWatered = '5 days ago'),
-      Plant((b) => b
-        ..name = 'Aloe Vera'
-        ..iconCodePoint = Icons.eco_rounded.codePoint
-        ..healthStatus = PlantHealthStatus.healthy
-        ..lastWatered = '1 day ago'),
-      Plant((b) => b
-        ..name = 'Tomato Plant'
-        ..iconCodePoint = Icons.filter_vintage_rounded.codePoint
-        ..healthStatus = PlantHealthStatus.recovering
-        ..lastWatered = '4 days ago'),
-      Plant((b) => b
-        ..name = 'Basil'
-        ..iconCodePoint = Icons.spa_rounded.codePoint
-        ..healthStatus = PlantHealthStatus.needsAttention
-        ..lastWatered = '6 days ago'),
-    ];
+    final plantsAsync = ref.watch(plantsListProvider);
 
     return Scaffold(
       body: SafeArea(
+        child: plantsAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, _) => _buildError(context, ref, colorScheme, error),
+          data: (plants) => _buildContent(context, ref, colorScheme, plants),
+        ),
+      ),
+    );
+  }
+
+  /// Renders the full populated layout (may include an empty state).
+  Widget _buildContent(
+    BuildContext context,
+    WidgetRef ref,
+    ColorScheme colorScheme,
+    List<Plant> plants,
+  ) {
+    return RefreshIndicator(
+      onRefresh: () => ref.refresh(plantsListProvider.future),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+            child: _buildHeaderBanner(colorScheme, plants),
+          ),
+          const SizedBox(height: 16),
+          _buildStatusSummary(colorScheme, plants),
+          const SizedBox(height: 16),
+          Expanded(
+            child: plants.isEmpty
+                ? _buildEmptyState(colorScheme)
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    itemCount: plants.length,
+                    itemBuilder: (context, index) {
+                      final images = [
+                        'assets/my_plant_bg.jpg',
+                        'assets/login_bg.jpg',
+                      ];
+                      return _buildPlantCard(
+                        context,
+                        plants[index],
+                        images[index % images.length],
+                        colorScheme,
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Error view with a retry action.
+  Widget _buildError(
+    BuildContext context,
+    WidgetRef ref,
+    ColorScheme colorScheme,
+    Object error,
+  ) {
+    final message = error is ApiException
+        ? error.message
+        : 'Could not load your plants.';
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-              child: _buildHeaderBanner(colorScheme, plants),
+            Icon(
+              Icons.cloud_off_rounded,
+              size: 48,
+              color: colorScheme.onSurface.withValues(alpha: 0.4),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 15,
+                color: colorScheme.onSurface.withValues(alpha: 0.7),
+              ),
             ),
             const SizedBox(height: 16),
-            _buildStatusSummary(colorScheme, plants),
-            const SizedBox(height: 16),
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: plants.length,
-                itemBuilder: (context, index) {
-                  final images = [
-                    'assets/my_plant_bg.jpg',
-                    'assets/login_bg.jpg',
-                  ];
-                  return _buildPlantCard(
-                    context,
-                    plants[index],
-                    images[index % images.length],
-                    colorScheme,
-                  );
-                },
-              ),
+            FilledButton.icon(
+              onPressed: () => ref.invalidate(plantsListProvider),
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Try again'),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  /// Empty state when the user has no plants yet.
+  Widget _buildEmptyState(ColorScheme colorScheme) {
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 60),
+      children: [
+        Icon(
+          Icons.yard_rounded,
+          size: 56,
+          color: colorScheme.primary.withValues(alpha: 0.4),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          'No plants yet',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontFamily: 'Georgia',
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Add your first plant to start tracking its health and care.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 14,
+            color: colorScheme.onSurface.withValues(alpha: 0.55),
+          ),
+        ),
+      ],
     );
   }
 
@@ -224,8 +285,7 @@ class PlantsScreen extends StatelessWidget {
   }
 
   /// Builds a single tappable plant card with image header and status badge.
-  Widget _buildPlantCard(
-      BuildContext context, Plant plant, String imagePath,
+  Widget _buildPlantCard(BuildContext context, Plant plant, String imagePath,
       ColorScheme colorScheme) {
     return DetectooCard(
       elevation: 1.5,
@@ -341,7 +401,7 @@ class PlantsScreen extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            'Watered ${plant.lastWatered}',
+                            'Watered ${plant.lastWateredLabel}',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,

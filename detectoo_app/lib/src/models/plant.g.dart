@@ -49,6 +49,8 @@ class _$PlantSerializer implements StructuredSerializer<Plant> {
     FullType specifiedType = FullType.unspecified,
   }) {
     final result = <Object?>[
+      'id',
+      serializers.serialize(object.id, specifiedType: const FullType(int)),
       'name',
       serializers.serialize(object.name, specifiedType: const FullType(String)),
       'iconCodePoint',
@@ -61,13 +63,16 @@ class _$PlantSerializer implements StructuredSerializer<Plant> {
         object.healthStatus,
         specifiedType: const FullType(PlantHealthStatus),
       ),
-      'lastWatered',
-      serializers.serialize(
-        object.lastWatered,
-        specifiedType: const FullType(String),
-      ),
     ];
-
+    Object? value;
+    value = object.lastWatered;
+    if (value != null) {
+      result
+        ..add('lastWatered')
+        ..add(
+          serializers.serialize(value, specifiedType: const FullType(DateTime)),
+        );
+    }
     return result;
   }
 
@@ -85,6 +90,14 @@ class _$PlantSerializer implements StructuredSerializer<Plant> {
       iterator.moveNext();
       final Object? value = iterator.current;
       switch (key) {
+        case 'id':
+          result.id =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(int),
+                  )!
+                  as int;
+          break;
         case 'name':
           result.name =
               serializers.deserialize(
@@ -113,9 +126,9 @@ class _$PlantSerializer implements StructuredSerializer<Plant> {
           result.lastWatered =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(String),
-                  )!
-                  as String;
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime?;
           break;
       }
     }
@@ -148,22 +161,25 @@ class _$PlantHealthStatusSerializer
 
 class _$Plant extends Plant {
   @override
+  final int id;
+  @override
   final String name;
   @override
   final int iconCodePoint;
   @override
   final PlantHealthStatus healthStatus;
   @override
-  final String lastWatered;
+  final DateTime? lastWatered;
 
   factory _$Plant([void Function(PlantBuilder)? updates]) =>
       (PlantBuilder()..update(updates))._build();
 
   _$Plant._({
+    required this.id,
     required this.name,
     required this.iconCodePoint,
     required this.healthStatus,
-    required this.lastWatered,
+    this.lastWatered,
   }) : super._();
   @override
   Plant rebuild(void Function(PlantBuilder) updates) =>
@@ -176,6 +192,7 @@ class _$Plant extends Plant {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is Plant &&
+        id == other.id &&
         name == other.name &&
         iconCodePoint == other.iconCodePoint &&
         healthStatus == other.healthStatus &&
@@ -185,6 +202,7 @@ class _$Plant extends Plant {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, id.hashCode);
     _$hash = $jc(_$hash, name.hashCode);
     _$hash = $jc(_$hash, iconCodePoint.hashCode);
     _$hash = $jc(_$hash, healthStatus.hashCode);
@@ -196,6 +214,7 @@ class _$Plant extends Plant {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'Plant')
+          ..add('id', id)
           ..add('name', name)
           ..add('iconCodePoint', iconCodePoint)
           ..add('healthStatus', healthStatus)
@@ -206,6 +225,10 @@ class _$Plant extends Plant {
 
 class PlantBuilder implements Builder<Plant, PlantBuilder> {
   _$Plant? _$v;
+
+  int? _id;
+  int? get id => _$this._id;
+  set id(int? id) => _$this._id = id;
 
   String? _name;
   String? get name => _$this._name;
@@ -221,15 +244,16 @@ class PlantBuilder implements Builder<Plant, PlantBuilder> {
   set healthStatus(PlantHealthStatus? healthStatus) =>
       _$this._healthStatus = healthStatus;
 
-  String? _lastWatered;
-  String? get lastWatered => _$this._lastWatered;
-  set lastWatered(String? lastWatered) => _$this._lastWatered = lastWatered;
+  DateTime? _lastWatered;
+  DateTime? get lastWatered => _$this._lastWatered;
+  set lastWatered(DateTime? lastWatered) => _$this._lastWatered = lastWatered;
 
   PlantBuilder();
 
   PlantBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _id = $v.id;
       _name = $v.name;
       _iconCodePoint = $v.iconCodePoint;
       _healthStatus = $v.healthStatus;
@@ -256,6 +280,7 @@ class PlantBuilder implements Builder<Plant, PlantBuilder> {
     final _$result =
         _$v ??
         _$Plant._(
+          id: BuiltValueNullFieldError.checkNotNull(id, r'Plant', 'id'),
           name: BuiltValueNullFieldError.checkNotNull(name, r'Plant', 'name'),
           iconCodePoint: BuiltValueNullFieldError.checkNotNull(
             iconCodePoint,
@@ -267,11 +292,7 @@ class PlantBuilder implements Builder<Plant, PlantBuilder> {
             r'Plant',
             'healthStatus',
           ),
-          lastWatered: BuiltValueNullFieldError.checkNotNull(
-            lastWatered,
-            r'Plant',
-            'lastWatered',
-          ),
+          lastWatered: lastWatered,
         );
     replace(_$result);
     return _$result;

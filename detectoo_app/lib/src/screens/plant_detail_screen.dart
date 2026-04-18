@@ -138,7 +138,7 @@ class PlantDetailScreen extends StatelessWidget {
         Expanded(
           child: _buildInfoCard(
             'Last Watered',
-            plant.lastWatered,
+            plant.lastWateredLabel,
             Icons.water_drop_outlined,
             colorScheme,
           ),

@@ -6,6 +6,9 @@ part 'scan_result.g.dart';
 
 /// Represents the result of a plant scan.
 abstract class ScanResult implements Built<ScanResult, ScanResultBuilder> {
+  /// Server-assigned identifier. `0` for locally-created mock results.
+  int get id;
+
   /// The identified plant name.
   String get plantName;
 
@@ -17,6 +20,15 @@ abstract class ScanResult implements Built<ScanResult, ScanResultBuilder> {
 
   /// List of detected issues, if any.
   BuiltList<DetectedIssue> get issues;
+
+  /// Optional plant this scan is linked to.
+  int? get plantId;
+
+  /// Optional URL to the captured image.
+  String? get imageUrl;
+
+  /// When this scan was recorded. Null for locally-created mock results.
+  DateTime? get createdAt;
 
   ScanResult._();
 

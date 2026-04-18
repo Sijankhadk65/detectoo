@@ -42,6 +42,12 @@ dependencies:
   built_value: ^8.9.5
   built_collection: ^5.1.1
 
+  # HTTP client
+  dio: ^5.7.0
+
+  # Secure token storage (keychain / EncryptedSharedPreferences)
+  flutter_secure_storage: ^9.2.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

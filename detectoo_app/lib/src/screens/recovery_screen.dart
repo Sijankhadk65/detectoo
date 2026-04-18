@@ -1,8 +1,11 @@
 import 'package:built_collection/built_collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/api/api_exception.dart';
 import '../models/plant.dart';
 import '../models/recovery_plan.dart';
+import '../providers/api_providers.dart';
 import '../widgets/gradient_banner.dart';
 import '../widgets/section_title.dart';
 import '../widgets/status_chip.dart';
@@ -12,122 +15,196 @@ import '../widgets/status_chip.dart';
 /// Displays a detailed, easy-to-understand recovery plan for an
 /// affected plant. Designed to be informative for users with no
 /// prior plant care expertise.
-class RecoveryScreen extends StatelessWidget {
+class RecoveryScreen extends ConsumerWidget {
   const RecoveryScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final plant = ModalRoute.of(context)?.settings.arguments as Plant?;
     final colorScheme = Theme.of(context).colorScheme;
 
-    // TODO: Replace with actual recovery plan data based on the plant.
-    final plan = RecoveryPlan((b) => b
-      ..condition = 'Black Spot Fungus'
-      ..severity = 'Moderate'
-      ..summary =
-          'Black spot is a common fungal disease that causes dark spots on '
-          'leaves. It spreads through water splashing on infected leaves. '
-          "Don't worry — with the right care, your plant can fully recover "
-          'in a few weeks.'
-      ..progress = 0.6
-      ..startedOn = 'Apr 3, 2026'
-      ..estimatedRecovery = '2–3 weeks'
-      ..steps.addAll([
-        RecoveryStep((b) => b
-          ..title = 'Remove affected leaves'
-          ..description =
-              'Gently pluck off any leaves with dark spots. This stops '
-              'the fungus from spreading to healthy parts of the plant.'
-          ..iconCodePoint = Icons.content_cut_rounded.codePoint
-          ..completed = true),
-        RecoveryStep((b) => b
-          ..title = 'Apply fungicide spray'
-          ..description =
-              'Use a mild fungicide (like neem oil mixed with water) and '
-              'spray it on the remaining leaves. Do this once every 5 days.'
-          ..iconCodePoint = Icons.shower_outlined.codePoint
-          ..completed = true),
-        RecoveryStep((b) => b
-          ..title = 'Improve air circulation'
-          ..description =
-              'Move your plant to a spot with better airflow. Avoid '
-              'crowding it with other plants. Good air flow helps leaves '
-              'dry faster and prevents fungus growth.'
-          ..iconCodePoint = Icons.air_rounded.codePoint
-          ..completed = true),
-        RecoveryStep((b) => b
-          ..title = 'Adjust watering method'
-          ..description =
-              'Water the soil directly, not the leaves. Wet leaves are '
-              "the main reason fungus spreads. It's best to water in the "
-              'morning so any splashes dry during the day.'
-          ..iconCodePoint = Icons.water_drop_outlined.codePoint
-          ..completed = false),
-        RecoveryStep((b) => b
-          ..title = 'Monitor for new spots'
-          ..description =
-              'Check your plant every 2–3 days. If you see new spots '
-              'appearing, repeat the fungicide spray. If no new spots '
-              'appear for 2 weeks, your plant is recovering well!'
-          ..iconCodePoint = Icons.visibility_outlined.codePoint
-          ..completed = false),
-      ])
-      ..doList.addAll([
-        'Water at the base of the plant, not on the leaves',
-        'Keep the plant in a spot with good sunlight and air flow',
-        'Clean up any fallen leaves from the soil surface',
-        'Wash your hands after handling the affected plant',
-      ])
-      ..dontList.addAll([
-        "Don't mist or spray water on the leaves",
-        "Don't place this plant too close to your other plants",
-        "Don't over-fertilize — it can stress the plant further",
-        "Don't ignore new spots — treat them early",
-      ])
-      ..signsOfImprovement.addAll([
-        'No new dark spots appearing on leaves',
-        'New healthy green leaves growing',
-        'Existing spots not getting larger',
-        'Plant looks more vibrant and upright',
-      ]));
-
-    return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
+    if (plant == null) {
+      return Scaffold(
+        body: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildTopBar(context, colorScheme),
-              _buildHeader(plant, plan, colorScheme),
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildWhatIsThis(plan, colorScheme),
-                    const SizedBox(height: 24),
-                    _buildProgressSection(plan, colorScheme),
-                    const SizedBox(height: 24),
-                    const SectionTitle(
-                      title: 'Recovery Steps',
-                      icon: Icons.format_list_numbered_rounded,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildSteps(plan.steps, colorScheme),
-                    const SizedBox(height: 24),
-                    _buildDoAndDont(plan, colorScheme),
-                    const SizedBox(height: 24),
-                    const SectionTitle(
-                      title: 'Signs Your Plant Is Getting Better',
-                      icon: Icons.trending_up_rounded,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildSignsOfImprovement(plan, colorScheme),
-                  ],
-                ),
+              Expanded(child: _buildMissingPlant(colorScheme)),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final planAsync = ref.watch(recoveryPlanForPlantProvider(plant.id));
+
+    return Scaffold(
+      body: SafeArea(
+        child: planAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, _) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildTopBar(context, colorScheme),
+              Expanded(
+                child: _buildError(context, ref, plant, colorScheme, error),
               ),
             ],
           ),
+          data: (plan) {
+            if (plan == null) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildTopBar(context, colorScheme),
+                  Expanded(child: _buildNoPlan(plant, colorScheme)),
+                ],
+              );
+            }
+            return _buildPlanContent(context, plant, plan, colorScheme);
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlanContent(
+    BuildContext context,
+    Plant plant,
+    RecoveryPlan plan,
+    ColorScheme colorScheme,
+  ) {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildTopBar(context, colorScheme),
+          _buildHeader(plant, plan, colorScheme),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildWhatIsThis(plan, colorScheme),
+                const SizedBox(height: 24),
+                _buildProgressSection(plan, colorScheme),
+                const SizedBox(height: 24),
+                const SectionTitle(
+                  title: 'Recovery Steps',
+                  icon: Icons.format_list_numbered_rounded,
+                ),
+                const SizedBox(height: 12),
+                _buildSteps(plan.steps, colorScheme),
+                const SizedBox(height: 24),
+                _buildDoAndDont(plan, colorScheme),
+                const SizedBox(height: 24),
+                const SectionTitle(
+                  title: 'Signs Your Plant Is Getting Better',
+                  icon: Icons.trending_up_rounded,
+                ),
+                const SizedBox(height: 12),
+                _buildSignsOfImprovement(plan, colorScheme),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMissingPlant(ColorScheme colorScheme) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Text(
+          'No plant was passed to the recovery screen.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 14,
+            color: colorScheme.onSurface.withValues(alpha: 0.6),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNoPlan(Plant plant, ColorScheme colorScheme) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.spa_rounded,
+              size: 48,
+              color: colorScheme.primary.withValues(alpha: 0.5),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '${plant.name} has no active recovery plan',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Georgia',
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Scan your plant to detect issues and start a recovery plan.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildError(
+    BuildContext context,
+    WidgetRef ref,
+    Plant plant,
+    ColorScheme colorScheme,
+    Object error,
+  ) {
+    final message = error is ApiException
+        ? error.message
+        : 'Could not load the recovery plan.';
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.cloud_off_rounded,
+              size: 48,
+              color: colorScheme.onSurface.withValues(alpha: 0.4),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: colorScheme.onSurface.withValues(alpha: 0.7),
+              ),
+            ),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              onPressed: () =>
+                  ref.invalidate(recoveryPlanForPlantProvider(plant.id)),
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Try again'),
+            ),
+          ],
         ),
       ),
     );
@@ -306,14 +383,14 @@ class RecoveryScreen extends StatelessWidget {
             children: [
               _buildTimelineInfo(
                 'Started',
-                plan.startedOn,
+                plan.startedOnLabel,
                 Icons.calendar_today_outlined,
                 colorScheme,
               ),
               const SizedBox(width: 20),
               _buildTimelineInfo(
                 'Est. Recovery',
-                plan.estimatedRecovery,
+                plan.estimatedRecoveryLabel,
                 Icons.schedule_outlined,
                 colorScheme,
               ),

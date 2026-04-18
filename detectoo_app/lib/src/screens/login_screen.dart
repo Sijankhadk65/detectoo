@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/api/api_exception.dart';
 import '../providers/auth_provider.dart';
 import '../routes.dart';
 import '../widgets/detectoo_button.dart';
@@ -31,6 +32,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isLoading = ref.watch(authProvider).isLoading;
 
     return Scaffold(
       body: Container(
@@ -63,7 +65,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 children: [
                   _buildBranding(colorScheme),
                   const SizedBox(height: 48),
-                  _buildFormCard(colorScheme),
+                  _buildFormCard(colorScheme, isLoading: isLoading),
                   const SizedBox(height: 24),
                   _buildSignUpLink(colorScheme),
                 ],
@@ -76,17 +78,42 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  /// Handles the login action by creating a user and navigating home.
-  void _handleLogin() {
-    final email = _emailController.text.trim();
-    final name = email.split('@').first;
+  /// Handles the login action by authenticating against the backend
+  /// and navigating home on success.
+  Future<void> _handleLogin() async {
+    final emailOrUsername = _emailController.text.trim();
+    final password = _passwordController.text;
 
-    ref.read(authProvider.notifier).signIn(
-          name: name.isNotEmpty ? name : 'Plant Lover',
-          email: email.isNotEmpty ? email : 'user@detectoo.app',
+    if (emailOrUsername.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter your email and password.')),
+      );
+      return;
+    }
+
+    await ref.read(authProvider.notifier).signIn(
+          emailOrUsername: emailOrUsername,
+          password: password,
         );
 
-    Navigator.pushReplacementNamed(context, Routes.home);
+    if (!mounted) return;
+
+    final auth = ref.read(authProvider);
+    auth.when(
+      data: (user) {
+        if (user != null) {
+          Navigator.pushReplacementNamed(context, Routes.home);
+        }
+      },
+      error: (error, _) {
+        final message =
+            error is ApiException ? error.message : 'Login failed.';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+      },
+      loading: () {},
+    );
   }
 
   /// Builds the app logo and welcome text with decorative leaves.
@@ -163,7 +190,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   /// Builds the form card containing email, password, and login button.
-  Widget _buildFormCard(ColorScheme colorScheme) {
+  Widget _buildFormCard(ColorScheme colorScheme, {required bool isLoading}) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -184,10 +211,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           _buildPasswordField(colorScheme),
           const SizedBox(height: 24),
           DetectooButton(
-            label: 'Log In',
+            label: isLoading ? 'Logging In…' : 'Log In',
             height: 52,
             color: colorScheme.secondary,
-            onPressed: _handleLogin,
+            onPressed: isLoading ? () {} : _handleLogin,
           ),
         ],
       ),
