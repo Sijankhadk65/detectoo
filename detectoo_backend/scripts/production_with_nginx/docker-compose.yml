@@ -16,16 +16,35 @@ services:
     expose:
        - "8000"
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_started
+      redis:
+        condition: service_started
+      init_admin:
+        condition: service_completed_successfully
     volumes:
       - ./src/app:/code/app
       - ./src/.env:/code/.env
       - ./src/alembic.ini:/code/alembic.ini
       - ./src/migrations:/code/migrations
+      - ./crudadmin_data:/code/crudadmin_data
+
+  init_admin:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: python -m src.scripts.init_admin
+    env_file:
+      - ./src/.env
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./src:/code/src
+      - ./crudadmin_data:/code/crudadmin_data
 
   worker:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     command: arq app.core.worker.settings.WorkerSettings
