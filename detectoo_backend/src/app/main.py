@@ -1,14 +1,34 @@
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+
 from .admin.initialize import create_admin_interface
 from .api import router
 from .core.config import settings
-from .core.setup import create_application
+from .core.setup import create_application, lifespan_factory
 
 admin = create_admin_interface()
 
-# Alembic is the source of truth for schema and CRUDAdmin's tables are
-# bootstrapped out-of-band by src/scripts/init_admin.py, so the app must not
-# create tables on startup.
-app = create_application(router=router, settings=settings, create_tables_on_start=False)
 
+@asynccontextmanager
+async def lifespan_with_admin(app: FastAPI) -> AsyncGenerator[None, None]:
+    """Custom lifespan that includes admin initialization."""
+    # Alembic is the source of truth for application schema; do not auto-create tables on startup.
+    default_lifespan = lifespan_factory(settings, create_tables_on_start=False)
+
+    # Run the default lifespan initialization and our admin initialization
+    async with default_lifespan(app):
+        # Initialize admin interface if it exists
+        if admin:
+            # Initialize admin database and setup
+            await admin.initialize()
+
+        yield
+
+
+app = create_application(router=router, settings=settings, lifespan=lifespan_with_admin)
+
+# Mount admin interface if enabled
 if admin:
     app.mount(settings.CRUD_ADMIN_MOUNT_PATH, admin.app)
