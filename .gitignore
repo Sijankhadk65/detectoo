@@ -98,3 +98,6 @@ coverage/
 
 # Logs
 *.log
+
+# Bruno
+/bruno/environments/

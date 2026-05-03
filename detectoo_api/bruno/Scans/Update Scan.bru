@@ -1,0 +1,21 @@
+meta {
+  name: Update Scan
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/scan/{{scan_id}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "plant_id": {{plant_id}}
+  }
+}

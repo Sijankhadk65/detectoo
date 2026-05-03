@@ -1,0 +1,13 @@
+Alembic migrations for detectoo_api.
+
+Generate a new revision (run from `src/`):
+
+    uv run alembic revision --autogenerate -m "<message>"
+
+Apply migrations:
+
+    uv run alembic upgrade head
+
+Verify no drift between models and DB:
+
+    uv run alembic check
