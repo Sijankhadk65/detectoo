@@ -6,13 +6,15 @@ meta {
 
 post {
   url: {{baseUrl}}/login
-  body: formUrlEncoded
+  body: json
   auth: none
 }
 
-body:form-urlencoded {
-  username: {{username}}
-  password: {{password}}
+body:json {
+  {
+    "email": "{{username}}",
+    "password": "{{password}}"
+  }
 }
 
 script:post-response {

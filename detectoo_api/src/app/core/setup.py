@@ -4,14 +4,17 @@ from collections.abc import AsyncGenerator, Callable
 from contextlib import _AsyncGeneratorContextManager, asynccontextmanager
 from typing import Any
 
+import os
+
 import fastapi
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
+from fastapi.staticfiles import StaticFiles
 
 from ..models import *  # noqa: F401, F403  -- ensure models are imported for SQLAlchemy metadata
-from .config import AppSettings, CORSSettings, EnvironmentOption, EnvironmentSettings, settings
+from .config import AppSettings, CORSSettings, EnvironmentOption, EnvironmentSettings, StorageSettings, settings
 from .db.database import Base
 from .db.database import async_engine as engine
 
@@ -62,6 +65,11 @@ def create_application(
         lifespan = lifespan_factory(create_tables_on_start=create_tables_on_start)
 
     application = FastAPI(lifespan=lifespan, **kwargs)
+
+    uploads_dir = settings.UPLOADS_DIR
+    os.makedirs(uploads_dir, exist_ok=True)
+    application.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
+
     application.include_router(router)
 
     if isinstance(settings, CORSSettings):

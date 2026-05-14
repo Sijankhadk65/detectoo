@@ -51,12 +51,28 @@ class PostgresSettings(BaseSettings):
 
 
 class FirstUserSettings(BaseSettings):
-    """First (admin) user bootstrapped via the create-superuser script."""
+    """First (admin) user bootstrapped via the seed script."""
 
     ADMIN_NAME: str = "admin"
     ADMIN_EMAIL: str = "admin@example.com"
     ADMIN_USERNAME: str = "admin"
     ADMIN_PASSWORD: str = "Str1ngst!"
+
+
+class TestUserSettings(BaseSettings):
+    """Test user bootstrapped via the seed script."""
+
+    TEST_USER_NAME: str = "Test User"
+    TEST_USER_EMAIL: str = "test@example.com"
+    TEST_USER_USERNAME: str = "testuser"
+    TEST_USER_PASSWORD: str = "Test1234!"
+
+
+class StorageSettings(BaseSettings):
+    """File storage settings."""
+
+    SERVER_URL: str = "http://localhost:8000"
+    UPLOADS_DIR: str = "/app/uploads"
 
 
 class EnvironmentOption(StrEnum):
@@ -80,6 +96,8 @@ class Settings(
     PostgresSettings,
     CryptSettings,
     FirstUserSettings,
+    TestUserSettings,
+    StorageSettings,
     EnvironmentSettings,
     CORSSettings,
 ):

@@ -18,13 +18,13 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<User> login({
-    required String emailOrUsername,
+    required String email,
     required String password,
   }) async {
-    final tokenJson = await _client.postForm(
+    final tokenJson = await _client.post(
       '/login',
-      fields: {
-        'username': emailOrUsername,
+      body: {
+        'email': email,
         'password': password,
       },
     ) as Map<String, dynamic>;

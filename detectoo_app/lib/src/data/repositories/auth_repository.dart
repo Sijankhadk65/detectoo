@@ -11,10 +11,10 @@ abstract class AuthRepository {
   /// authenticated user. The token is persisted for subsequent
   /// requests.
   ///
-  /// The backend's `/login` endpoint accepts either username or email
-  /// in the `username` form field, so [emailOrUsername] may be either.
+  /// Authenticates with email + password. The backend accepts only a
+  /// valid email address; usernames are no longer supported.
   Future<User> login({
-    required String emailOrUsername,
+    required String email,
     required String password,
   });
 

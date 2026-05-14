@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import '../../models/plant.dart';
 import '../api/api_client.dart';
 import '../api/api_exception.dart';
@@ -80,6 +82,15 @@ class PlantsRepositoryImpl implements PlantsRepository {
     await _client.delete('/plant/$id');
   }
 
+  @override
+  Future<Plant> createPlantFromPhoto(File photo) async {
+    final json = await _client.postMultipart(
+      '/plant/from-photo',
+      file: photo,
+    ) as Map<String, dynamic>;
+    return _mapPlant(json);
+  }
+
   /// Maps a `PlantRead` JSON payload onto the app's [Plant] model.
   Plant _mapPlant(Map<String, dynamic> json) {
     return Plant(
@@ -88,7 +99,8 @@ class PlantsRepositoryImpl implements PlantsRepository {
         ..name = json['name'] as String
         ..iconCodePoint = json['icon_code_point'] as int
         ..healthStatus = _parseStatus(json['health_status'] as String?)
-        ..lastWatered = _parseDate(json['last_watered']),
+        ..lastWatered = _parseDate(json['last_watered'])
+        ..imageUrl = json['image_url'] as String?,
     );
   }
 

@@ -73,6 +73,14 @@ class _$PlantSerializer implements StructuredSerializer<Plant> {
           serializers.serialize(value, specifiedType: const FullType(DateTime)),
         );
     }
+    value = object.imageUrl;
+    if (value != null) {
+      result
+        ..add('imageUrl')
+        ..add(
+          serializers.serialize(value, specifiedType: const FullType(String)),
+        );
+    }
     return result;
   }
 
@@ -130,6 +138,14 @@ class _$PlantSerializer implements StructuredSerializer<Plant> {
                   )
                   as DateTime?;
           break;
+        case 'imageUrl':
+          result.imageUrl =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String?;
+          break;
       }
     }
 
@@ -170,6 +186,8 @@ class _$Plant extends Plant {
   final PlantHealthStatus healthStatus;
   @override
   final DateTime? lastWatered;
+  @override
+  final String? imageUrl;
 
   factory _$Plant([void Function(PlantBuilder)? updates]) =>
       (PlantBuilder()..update(updates))._build();
@@ -180,6 +198,7 @@ class _$Plant extends Plant {
     required this.iconCodePoint,
     required this.healthStatus,
     this.lastWatered,
+    this.imageUrl,
   }) : super._();
   @override
   Plant rebuild(void Function(PlantBuilder) updates) =>
@@ -196,7 +215,8 @@ class _$Plant extends Plant {
         name == other.name &&
         iconCodePoint == other.iconCodePoint &&
         healthStatus == other.healthStatus &&
-        lastWatered == other.lastWatered;
+        lastWatered == other.lastWatered &&
+        imageUrl == other.imageUrl;
   }
 
   @override
@@ -207,6 +227,7 @@ class _$Plant extends Plant {
     _$hash = $jc(_$hash, iconCodePoint.hashCode);
     _$hash = $jc(_$hash, healthStatus.hashCode);
     _$hash = $jc(_$hash, lastWatered.hashCode);
+    _$hash = $jc(_$hash, imageUrl.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -218,7 +239,8 @@ class _$Plant extends Plant {
           ..add('name', name)
           ..add('iconCodePoint', iconCodePoint)
           ..add('healthStatus', healthStatus)
-          ..add('lastWatered', lastWatered))
+          ..add('lastWatered', lastWatered)
+          ..add('imageUrl', imageUrl))
         .toString();
   }
 }
@@ -248,6 +270,10 @@ class PlantBuilder implements Builder<Plant, PlantBuilder> {
   DateTime? get lastWatered => _$this._lastWatered;
   set lastWatered(DateTime? lastWatered) => _$this._lastWatered = lastWatered;
 
+  String? _imageUrl;
+  String? get imageUrl => _$this._imageUrl;
+  set imageUrl(String? imageUrl) => _$this._imageUrl = imageUrl;
+
   PlantBuilder();
 
   PlantBuilder get _$this {
@@ -258,6 +284,7 @@ class PlantBuilder implements Builder<Plant, PlantBuilder> {
       _iconCodePoint = $v.iconCodePoint;
       _healthStatus = $v.healthStatus;
       _lastWatered = $v.lastWatered;
+      _imageUrl = $v.imageUrl;
       _$v = null;
     }
     return this;
@@ -293,6 +320,7 @@ class PlantBuilder implements Builder<Plant, PlantBuilder> {
             'healthStatus',
           ),
           lastWatered: lastWatered,
+          imageUrl: imageUrl,
         );
     replace(_$result);
     return _$result;

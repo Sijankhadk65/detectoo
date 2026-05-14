@@ -18,6 +18,7 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
+  final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
@@ -27,6 +28,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  static bool _isValidEmail(String value) {
+    return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(value);
   }
 
   @override
@@ -65,7 +70,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 children: [
                   _buildBranding(colorScheme),
                   const SizedBox(height: 48),
-                  _buildFormCard(colorScheme, isLoading: isLoading),
+                  Form(
+                    key: _formKey,
+                    child: _buildFormCard(colorScheme, isLoading: isLoading),
+                  ),
                   const SizedBox(height: 24),
                   _buildSignUpLink(colorScheme),
                 ],
@@ -81,18 +89,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   /// Handles the login action by authenticating against the backend
   /// and navigating home on success.
   Future<void> _handleLogin() async {
-    final emailOrUsername = _emailController.text.trim();
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    final email = _emailController.text.trim();
     final password = _passwordController.text;
 
-    if (emailOrUsername.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter your email and password.')),
-      );
-      return;
-    }
-
     await ref.read(authProvider.notifier).signIn(
-          emailOrUsername: emailOrUsername,
+          email: email,
           password: password,
         );
 
@@ -221,11 +224,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  /// Builds the email input field.
+  /// Builds the email input field with format validation.
   Widget _buildEmailField(ColorScheme colorScheme) {
-    return TextField(
+    return TextFormField(
       controller: _emailController,
       keyboardType: TextInputType.emailAddress,
+      autocorrect: false,
+      validator: (value) {
+        final trimmed = (value ?? '').trim();
+        if (trimmed.isEmpty) return 'Email is required.';
+        if (!_isValidEmail(trimmed)) return 'Enter a valid email address.';
+        return null;
+      },
       decoration: InputDecoration(
         labelText: 'Email',
         hintText: 'you@example.com',
@@ -239,6 +249,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: colorScheme.error, width: 1.5),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: colorScheme.error, width: 1.5),
         ),
       ),
     );

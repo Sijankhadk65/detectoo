@@ -13,4 +13,5 @@ class Routes {
   static const String scan = '/scan';
   static const String plantDetail = '/plant-detail';
   static const String recovery = '/recovery';
+  static const String addPlant = '/add-plant';
 }

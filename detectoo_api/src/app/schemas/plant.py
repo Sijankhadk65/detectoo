@@ -38,6 +38,7 @@ class PlantRead(BaseModel):
     health_status: Annotated[str, Field(examples=["healthy"])]
     last_watered: datetime | None
     icon_code_point: int
+    image_url: str | None
     created_by_user_id: int
     created_at: datetime
 
@@ -54,6 +55,7 @@ class PlantCreateInternal(PlantCreate):
     """Internal schema that includes the user ID."""
 
     created_by_user_id: int
+    image_url: str | None = None
 
 
 class PlantUpdate(BaseModel):

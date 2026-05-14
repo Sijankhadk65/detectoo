@@ -4,7 +4,7 @@ from datetime import timedelta
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, Response
-from fastapi.security import OAuth2PasswordRequestForm
+from pydantic import BaseModel, EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...core.config import settings
@@ -23,21 +23,28 @@ from ...core.security import (
 router = APIRouter(tags=["login"])
 
 
+class LoginRequest(BaseModel):
+    """Credentials for email/password login."""
+
+    email: EmailStr
+    password: str
+
+
 @router.post("/login", response_model=Token)
 async def login_for_access_token(
     response: Response,
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    body: LoginRequest,
     db: Annotated[AsyncSession, Depends(async_get_db)],
 ) -> dict[str, str]:
-    """Exchange username/email + password for an access token (and a refresh cookie)."""
-    user = await authenticate_user(username_or_email=form_data.username, password=form_data.password, db=db)
+    """Exchange email + password for an access token (and a refresh cookie)."""
+    user = await authenticate_user(email=body.email, password=body.password, db=db)
     if not user:
-        raise UnauthorizedException("Wrong username, email or password.")
+        raise UnauthorizedException("Wrong email or password.")
 
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = await create_access_token(data={"sub": user["username"]}, expires_delta=access_token_expires)
+    access_token = await create_access_token(data={"sub": user["email"]}, expires_delta=access_token_expires)
 
-    refresh_token = await create_refresh_token(data={"sub": user["username"]})
+    refresh_token = await create_refresh_token(data={"sub": user["email"]})
     max_age = settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
 
     response.set_cookie(
@@ -65,5 +72,5 @@ async def refresh_access_token(
     if not user_data:
         raise UnauthorizedException("Invalid refresh token.")
 
-    new_access_token = await create_access_token(data={"sub": user_data.username_or_email})
+    new_access_token = await create_access_token(data={"sub": user_data.email})
     return {"access_token": new_access_token, "token_type": "bearer"}

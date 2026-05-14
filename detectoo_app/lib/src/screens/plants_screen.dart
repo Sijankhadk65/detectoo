@@ -28,6 +28,16 @@ class PlantsScreen extends ConsumerWidget {
           data: (plants) => _buildContent(context, ref, colorScheme, plants),
         ),
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => Navigator.pushNamed(context, Routes.addPlant),
+        backgroundColor: colorScheme.secondary,
+        foregroundColor: colorScheme.onSecondary,
+        icon: const Icon(Icons.add_a_photo_rounded),
+        label: const Text(
+          'Add Plant',
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
+      ),
     );
   }
 
@@ -57,14 +67,9 @@ class PlantsScreen extends ConsumerWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     itemCount: plants.length,
                     itemBuilder: (context, index) {
-                      final images = [
-                        'assets/my_plant_bg.jpg',
-                        'assets/login_bg.jpg',
-                      ];
                       return _buildPlantCard(
                         context,
                         plants[index],
-                        images[index % images.length],
                         colorScheme,
                       );
                     },
@@ -285,8 +290,10 @@ class PlantsScreen extends ConsumerWidget {
   }
 
   /// Builds a single tappable plant card with image header and status badge.
-  Widget _buildPlantCard(BuildContext context, Plant plant, String imagePath,
-      ColorScheme colorScheme) {
+  Widget _buildPlantCard(
+      BuildContext context, Plant plant, ColorScheme colorScheme) {
+    final imageUrl = plant.imageUrl;
+
     return DetectooCard(
       elevation: 1.5,
       onTap: () {
@@ -304,12 +311,17 @@ class PlantsScreen extends ConsumerWidget {
             ),
             child: Stack(
               children: [
-                Image.asset(
-                  imagePath,
-                  width: double.infinity,
-                  height: 140,
-                  fit: BoxFit.cover,
-                ),
+                if (imageUrl != null)
+                  Image.network(
+                    imageUrl,
+                    width: double.infinity,
+                    height: 140,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stack) =>
+                        _buildCardImagePlaceholder(plant, colorScheme),
+                  )
+                else
+                  _buildCardImagePlaceholder(plant, colorScheme),
                 // Status badge
                 Positioned(
                   top: 10,
@@ -422,6 +434,22 @@ class PlantsScreen extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Fallback header shown when a plant has no uploaded photo.
+  Widget _buildCardImagePlaceholder(Plant plant, ColorScheme colorScheme) {
+    return Container(
+      width: double.infinity,
+      height: 140,
+      color: colorScheme.primaryContainer.withValues(alpha: 0.3),
+      child: Center(
+        child: Icon(
+          plant.iconData,
+          size: 52,
+          color: colorScheme.primary.withValues(alpha: 0.6),
+        ),
       ),
     );
   }

@@ -48,6 +48,9 @@ dependencies:
   # Secure token storage (keychain / EncryptedSharedPreferences)
   flutter_secure_storage: ^9.2.2
 
+  # Camera / gallery image picking
+  image_picker: ^1.1.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

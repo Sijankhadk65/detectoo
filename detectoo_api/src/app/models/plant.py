@@ -23,6 +23,7 @@ class Plant(Base):
     health_status: Mapped[str] = mapped_column(String(20), default="healthy")
     last_watered: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=None)
     icon_code_point: Mapped[int] = mapped_column(default=0xE894)
+    image_url: Mapped[str | None] = mapped_column(String(500), default=None)
 
     uuid: Mapped[uuid_pkg.UUID] = mapped_column(UUID(as_uuid=True), default_factory=uuid7, unique=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default_factory=lambda: datetime.now(UTC))

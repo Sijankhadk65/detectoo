@@ -45,8 +45,12 @@ services:
       # network instead of localhost:5433.
       POSTGRES_SERVER: db
       POSTGRES_PORT: "5432"
+      SERVER_URL: "https://api.detectoo.tech"
+      UPLOADS_DIR: "/app/uploads"
     ports:
       - "8000:8000"
+    volumes:
+      - uploads_data:/app/uploads
     depends_on:
       db:
         condition: service_healthy
@@ -54,3 +58,4 @@ services:
 
 volumes:
   postgres_data:
+  uploads_data:

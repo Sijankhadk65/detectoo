@@ -35,7 +35,5 @@ WORKDIR /app/src
 
 EXPOSE 8000
 
-# Production-ish default: no --reload, multiple workers.
-# For dev override at runtime:
-#   docker compose run --rm --service-ports web uvicorn app.main:app --reload --host 0.0.0.0
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+# Run migrations and seed as separate processes, then exec uvicorn as PID 1.
+CMD ["sh", "-c", "alembic upgrade head && python seed.py && exec uvicorn app.main:app --host 0.0.0.0 --port 8000"]

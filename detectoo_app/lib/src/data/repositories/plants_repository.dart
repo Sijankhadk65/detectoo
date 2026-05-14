@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import '../../models/plant.dart';
 
 /// Domain contract for plant management.
@@ -41,4 +43,8 @@ abstract class PlantsRepository {
   /// Soft-deletes a plant. The server marks it `is_deleted` so it
   /// stops appearing in subsequent `listPlants` results.
   Future<void> deletePlant(int id);
+
+  /// Uploads [photo] to the backend and returns the mock plant record
+  /// the server creates from it.
+  Future<Plant> createPlantFromPhoto(File photo);
 }

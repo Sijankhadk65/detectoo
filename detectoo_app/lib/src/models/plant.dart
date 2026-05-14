@@ -24,6 +24,10 @@ abstract class Plant implements Built<Plant, PlantBuilder> {
   /// with [lastWateredLabel].
   DateTime? get lastWatered;
 
+  /// URL of the photo uploaded when this plant was created.
+  /// `null` for plants created without a photo.
+  String? get imageUrl;
+
   /// Returns the [IconData] for this plant's icon.
   @BuiltValueField(serialize: false)
   IconData get iconData =>

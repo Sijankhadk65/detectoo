@@ -17,17 +17,16 @@ class AuthNotifier extends AsyncNotifier<User?> {
 
   AuthRepository get _repo => ref.read(authRepositoryProvider);
 
-  /// Logs in with an email (or username) + password. On completion the
-  /// notifier state is either `AsyncValue.data(user)` or
-  /// `AsyncValue.error(...)` — observe [state] to react.
+  /// Logs in with email + password. On completion the notifier state is
+  /// either `AsyncValue.data(user)` or `AsyncValue.error(...)`.
   Future<void> signIn({
-    required String emailOrUsername,
+    required String email,
     required String password,
   }) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() {
       return _repo.login(
-        emailOrUsername: emailOrUsername,
+        email: email,
         password: password,
       );
     });

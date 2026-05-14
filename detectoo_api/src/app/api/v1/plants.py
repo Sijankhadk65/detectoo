@@ -1,18 +1,32 @@
 """Plant endpoints — list, get, create, update, soft/hard delete."""
 
+import os
+import random
+import uuid
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from fastcrud import PaginatedListResponse, compute_offset, paginated_response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...api.dependencies import get_current_superuser, get_current_user
+from ...core.config import settings
 from ...core.db.database import async_get_db
 from ...core.exceptions.http_exceptions import NotFoundException
 from ...crud.crud_plants import crud_plants
 from ...schemas.plant import PlantCreate, PlantCreateInternal, PlantRead, PlantUpdate
 
+_ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp", "image/heic"}
+_UPLOADS_PLANTS_DIR = os.path.join(settings.UPLOADS_DIR, "plants")
+
 router = APIRouter(tags=["plants"])
+
+_MOCK_NAMES = [
+    "Monstera Deliciosa", "Golden Pothos", "Snake Plant", "Peace Lily",
+    "Fiddle Leaf Fig", "Spider Plant", "Rubber Plant", "Aloe Vera",
+    "Boston Fern", "ZZ Plant", "Philodendron", "Calathea",
+]
+_MOCK_ICONS = [0xE56D, 0xE894, 0xEA1E, 0xF483]  # eco, local_florist, yard, forest
 
 
 @router.post("/plant", response_model=PlantRead, status_code=201)
@@ -29,6 +43,45 @@ async def create_plant(
     plant_internal = PlantCreateInternal(**plant_internal_dict)
     created_plant = await crud_plants.create(db=db, object=plant_internal, schema_to_select=PlantRead)
 
+    if created_plant is None:
+        raise NotFoundException("Failed to create plant")
+
+    return created_plant
+
+
+@router.post("/plant/from-photo", response_model=PlantRead, status_code=201)
+async def create_plant_from_photo(
+    request: Request,
+    photo: Annotated[UploadFile, File(description="Plant photo")],
+    current_user: Annotated[dict, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(async_get_db)],
+) -> dict[str, Any]:
+    """Accept a plant photo, persist it, and create a mock plant record.
+
+    The image is stored under UPLOADS_DIR and exposed via /uploads/plants/<filename>.
+    Name and icon are randomly assigned — ML inference will replace this later.
+    """
+    if photo.content_type not in _ALLOWED_CONTENT_TYPES:
+        raise HTTPException(status_code=422, detail=f"Unsupported image type: {photo.content_type}")
+
+    ext = (photo.filename or "photo.jpg").rsplit(".", 1)[-1].lower() or "jpg"
+    filename = f"{uuid.uuid4().hex}.{ext}"
+    os.makedirs(_UPLOADS_PLANTS_DIR, exist_ok=True)
+    dest = os.path.join(_UPLOADS_PLANTS_DIR, filename)
+    contents = await photo.read()
+    with open(dest, "wb") as f:
+        f.write(contents)
+
+    image_url = f"{settings.SERVER_URL}/uploads/plants/{filename}"
+
+    plant_internal = PlantCreateInternal(
+        name=random.choice(_MOCK_NAMES),
+        health_status="healthy",
+        icon_code_point=random.choice(_MOCK_ICONS),
+        created_by_user_id=current_user["id"],
+        image_url=image_url,
+    )
+    created_plant = await crud_plants.create(db=db, object=plant_internal, schema_to_select=PlantRead)
     if created_plant is None:
         raise NotFoundException("Failed to create plant")
 
