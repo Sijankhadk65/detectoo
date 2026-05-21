@@ -20,6 +20,7 @@ dependencies = [
     "alembic>=1.13.1",
     "fastcrud>=0.19.2",
     "uuid6>=2024.1.12",
+    "anthropic>=0.102.0",
 ]
 
 [dependency-groups]

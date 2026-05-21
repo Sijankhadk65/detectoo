@@ -1,7 +1,6 @@
 """Plant endpoints — list, get, create, update, soft/hard delete."""
 
 import os
-import random
 import uuid
 from typing import Annotated, Any
 
@@ -15,18 +14,12 @@ from ...core.db.database import async_get_db
 from ...core.exceptions.http_exceptions import NotFoundException
 from ...crud.crud_plants import crud_plants
 from ...schemas.plant import PlantCreate, PlantCreateInternal, PlantRead, PlantUpdate
+from ...services.plant_detection import PlantDetectionError, detect_plant
 
 _ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp", "image/heic"}
 _UPLOADS_PLANTS_DIR = os.path.join(settings.UPLOADS_DIR, "plants")
 
 router = APIRouter(tags=["plants"])
-
-_MOCK_NAMES = [
-    "Monstera Deliciosa", "Golden Pothos", "Snake Plant", "Peace Lily",
-    "Fiddle Leaf Fig", "Spider Plant", "Rubber Plant", "Aloe Vera",
-    "Boston Fern", "ZZ Plant", "Philodendron", "Calathea",
-]
-_MOCK_ICONS = [0xE56D, 0xE894, 0xEA1E, 0xF483]  # eco, local_florist, yard, forest
 
 
 @router.post("/plant", response_model=PlantRead, status_code=201)
@@ -56,10 +49,10 @@ async def create_plant_from_photo(
     current_user: Annotated[dict, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(async_get_db)],
 ) -> dict[str, Any]:
-    """Accept a plant photo, persist it, and create a mock plant record.
+    """Accept a plant photo, identify it with Claude, and create a plant record.
 
     The image is stored under UPLOADS_DIR and exposed via /uploads/plants/<filename>.
-    Name and icon are randomly assigned — ML inference will replace this later.
+    Returns 422 if the photo is not a recognisable plant.
     """
     if photo.content_type not in _ALLOWED_CONTENT_TYPES:
         raise HTTPException(status_code=422, detail=f"Unsupported image type: {photo.content_type}")
@@ -72,12 +65,18 @@ async def create_plant_from_photo(
     with open(dest, "wb") as f:
         f.write(contents)
 
+    try:
+        detection = await detect_plant(dest)
+    except PlantDetectionError as exc:
+        os.remove(dest)
+        raise HTTPException(status_code=422, detail=exc.message) from exc
+
     image_url = f"{settings.SERVER_URL}/uploads/plants/{filename}"
 
     plant_internal = PlantCreateInternal(
-        name=random.choice(_MOCK_NAMES),
-        health_status="healthy",
-        icon_code_point=random.choice(_MOCK_ICONS),
+        name=detection.name,
+        health_status=detection.health_status,
+        icon_code_point=detection.icon_code_point,
         created_by_user_id=current_user["id"],
         image_url=image_url,
     )

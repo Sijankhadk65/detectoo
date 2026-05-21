@@ -75,6 +75,12 @@ class StorageSettings(BaseSettings):
     UPLOADS_DIR: str = "/app/uploads"
 
 
+class AISettings(BaseSettings):
+    """AI / LLM service settings."""
+
+    ANTHROPIC_API_KEY: SecretStr = SecretStr("")
+
+
 class EnvironmentOption(StrEnum):
     LOCAL = "local"
     STAGING = "staging"
@@ -98,6 +104,7 @@ class Settings(
     FirstUserSettings,
     TestUserSettings,
     StorageSettings,
+    AISettings,
     EnvironmentSettings,
     CORSSettings,
 ):
