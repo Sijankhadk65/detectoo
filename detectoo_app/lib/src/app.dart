@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'routes.dart';
+import 'screens/add_plant_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/plant_detail_screen.dart';
 import 'screens/recovery_screen.dart';
@@ -38,6 +39,7 @@ class DetectooApp extends StatelessWidget {
         Routes.home: (context) => const BottomNavBar(),
         Routes.plantDetail: (context) => const PlantDetailScreen(),
         Routes.recovery: (context) => const RecoveryScreen(),
+        Routes.addPlant: (context) => const AddPlantScreen(),
       },
     );
   }

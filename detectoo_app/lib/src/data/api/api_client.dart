@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 
 import '../storage/token_storage.dart';
@@ -55,6 +57,19 @@ class ApiClient {
       _send(
         () => _dio.post<dynamic>(path, data: body, queryParameters: query),
       );
+
+  /// Performs a multipart `POST` uploading [file] under [fieldName].
+  Future<dynamic> postMultipart(
+    String path, {
+    required File file,
+    String fieldName = 'photo',
+  }) =>
+      _send(() async {
+        final formData = FormData.fromMap({
+          fieldName: await MultipartFile.fromFile(file.path),
+        });
+        return _dio.post<dynamic>(path, data: formData);
+      });
 
   /// Performs a form-url-encoded `POST`. Used for OAuth2 endpoints like
   /// `/login` that expect `application/x-www-form-urlencoded`.

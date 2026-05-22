@@ -1,0 +1,15 @@
+meta {
+  name: Delete Scan
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/scan/{{scan_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

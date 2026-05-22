@@ -1,0 +1,39 @@
+# VCS
+.git
+.gitignore
+
+# Python caches / build artifacts
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.venv
+venv
+.eggs
+*.egg-info
+dist
+build
+
+# Tooling caches
+.mypy_cache
+.ruff_cache
+.pytest_cache
+.coverage
+htmlcov
+
+# IDE
+.vscode
+.idea
+*.swp
+
+# Project-level files that don't belong in the image
+README.md
+CLAUDE.md
+Dockerfile
+.dockerignore
+docker-compose.yml
+bruno
+
+# Secrets — re-injected via env_file at runtime, never baked into the image
+.env
+src/.env

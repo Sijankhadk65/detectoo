@@ -1,0 +1,15 @@
+meta {
+  name: Get Recovery Plan
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/recovery-plan/{{recovery_plan_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

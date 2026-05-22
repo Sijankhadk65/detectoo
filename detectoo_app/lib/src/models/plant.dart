@@ -24,6 +24,16 @@ abstract class Plant implements Built<Plant, PlantBuilder> {
   /// with [lastWateredLabel].
   DateTime? get lastWatered;
 
+  /// URL of the photo uploaded when this plant was created.
+  /// `null` for plants created without a photo.
+  String? get imageUrl;
+
+  /// Sunlight requirement: `low`, `indirect`, `bright`, or `direct`.
+  String? get sunlight;
+
+  /// Humidity preference: `low`, `medium`, or `high`.
+  String? get humidity;
+
   /// Returns the [IconData] for this plant's icon.
   @BuiltValueField(serialize: false)
   IconData get iconData =>

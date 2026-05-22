@@ -1,0 +1,205 @@
+"""Plant endpoints — list, get, create, update, soft/hard delete."""
+
+import os
+import uuid
+from typing import Annotated, Any
+
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
+from fastcrud import PaginatedListResponse, compute_offset, paginated_response
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from ...api.dependencies import get_current_superuser, get_current_user
+from ...core.config import settings
+from ...core.db.database import async_get_db
+from ...core.exceptions.http_exceptions import NotFoundException
+from ...crud.crud_plants import crud_plants
+from ...schemas.plant import (
+    PlantCreate,
+    PlantCreateInternal,
+    PlantDetectionRead,
+    PlantRead,
+    PlantUpdate,
+    RecoveryPlanDetectionRead,
+    RecoveryStepDetectionRead,
+)
+from ...services.plant_detection import PlantDetectionError, detect_plant
+
+_ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp", "image/heic"}
+_UPLOADS_PLANTS_DIR = os.path.join(settings.UPLOADS_DIR, "plants")
+
+router = APIRouter(tags=["plants"])
+
+
+@router.post("/plant", response_model=PlantRead, status_code=201)
+async def create_plant(
+    request: Request,
+    plant: PlantCreate,
+    current_user: Annotated[dict, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(async_get_db)],
+) -> dict[str, Any]:
+    """Create a new plant for the authenticated user."""
+    plant_internal_dict = plant.model_dump()
+    plant_internal_dict["created_by_user_id"] = current_user["id"]
+    plant_internal = PlantCreateInternal(**plant_internal_dict)
+    created_plant = await crud_plants.create(db=db, object=plant_internal, schema_to_select=PlantRead)
+
+    if created_plant is None:
+        raise NotFoundException("Failed to create plant")
+
+    return created_plant
+
+
+@router.post("/plant/from-photo", response_model=PlantDetectionRead, status_code=200)
+async def detect_plant_from_photo(
+    request: Request,
+    photo: Annotated[UploadFile, File(description="Plant photo")],
+    current_user: Annotated[dict, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(async_get_db)],
+) -> PlantDetectionRead:
+    """Save the uploaded photo and return Claude's plant detection result.
+
+    The plant is NOT created yet — the client should display the result
+    to the user for confirmation, then call POST /plant with the
+    confirmed values and the returned image_url.
+
+    Returns 422 if the photo is not a recognisable plant.
+    """
+    if photo.content_type not in _ALLOWED_CONTENT_TYPES:
+        raise HTTPException(status_code=422, detail=f"Unsupported image type: {photo.content_type}")
+
+    ext = (photo.filename or "photo.jpg").rsplit(".", 1)[-1].lower() or "jpg"
+    filename = f"{uuid.uuid4().hex}.{ext}"
+    os.makedirs(_UPLOADS_PLANTS_DIR, exist_ok=True)
+    dest = os.path.join(_UPLOADS_PLANTS_DIR, filename)
+    contents = await photo.read()
+    with open(dest, "wb") as f:
+        f.write(contents)
+
+    try:
+        detection = await detect_plant(dest)
+    except PlantDetectionError as exc:
+        os.remove(dest)
+        raise HTTPException(status_code=422, detail=exc.message) from exc
+
+    image_url = f"{settings.SERVER_URL}/uploads/plants/{filename}"
+
+    disease = None
+    if detection.recovery_plan is not None:
+        rp = detection.recovery_plan
+        disease = RecoveryPlanDetectionRead(
+            condition=rp.condition,
+            severity=rp.severity,
+            summary=rp.summary,
+            estimated_recovery=rp.estimated_recovery,
+            do_list=rp.do_list,
+            dont_list=rp.dont_list,
+            signs_of_improvement=rp.signs_of_improvement,
+            steps=[
+                RecoveryStepDetectionRead(
+                    title=s.title,
+                    description=s.description,
+                    step_order=s.step_order,
+                )
+                for s in rp.steps
+            ],
+        )
+
+    return PlantDetectionRead(
+        name=detection.name,
+        health_status=detection.health_status,
+        icon_code_point=detection.icon_code_point,
+        image_url=image_url,
+        sunlight=detection.sunlight,
+        humidity=detection.humidity,
+        disease=disease,
+    )
+
+
+@router.get("/plants", response_model=PaginatedListResponse[PlantRead])
+async def read_plants(
+    request: Request,
+    current_user: Annotated[dict, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(async_get_db)],
+    page: int = 1,
+    items_per_page: int = 10,
+) -> dict[str, Any]:
+    """List all plants for the authenticated user."""
+    plants_data = await crud_plants.get_multi(
+        db=db,
+        offset=compute_offset(page, items_per_page),
+        limit=items_per_page,
+        created_by_user_id=current_user["id"],
+        is_deleted=False,
+    )
+
+    response: dict[str, Any] = paginated_response(crud_data=plants_data, page=page, items_per_page=items_per_page)
+    return response
+
+
+@router.get("/plant/{id}", response_model=PlantRead)
+async def read_plant(
+    request: Request,
+    id: int,
+    current_user: Annotated[dict, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(async_get_db)],
+) -> dict[str, Any]:
+    """Get a single plant by ID."""
+    db_plant = await crud_plants.get(
+        db=db, id=id, created_by_user_id=current_user["id"], is_deleted=False, schema_to_select=PlantRead
+    )
+    if db_plant is None:
+        raise NotFoundException("Plant not found")
+
+    return db_plant
+
+
+@router.patch("/plant/{id}")
+async def update_plant(
+    request: Request,
+    id: int,
+    values: PlantUpdate,
+    current_user: Annotated[dict, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(async_get_db)],
+) -> dict[str, str]:
+    """Update a plant owned by the authenticated user."""
+    db_plant = await crud_plants.get(
+        db=db, id=id, created_by_user_id=current_user["id"], is_deleted=False, schema_to_select=PlantRead
+    )
+    if db_plant is None:
+        raise NotFoundException("Plant not found")
+
+    await crud_plants.update(db=db, object=values, id=id)
+    return {"message": "Plant updated"}
+
+
+@router.delete("/plant/{id}")
+async def delete_plant(
+    request: Request,
+    id: int,
+    current_user: Annotated[dict, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(async_get_db)],
+) -> dict[str, str]:
+    """Soft-delete a plant owned by the authenticated user."""
+    db_plant = await crud_plants.get(
+        db=db, id=id, created_by_user_id=current_user["id"], is_deleted=False, schema_to_select=PlantRead
+    )
+    if db_plant is None:
+        raise NotFoundException("Plant not found")
+
+    await crud_plants.delete(db=db, id=id)
+    return {"message": "Plant deleted"}
+
+
+@router.delete("/db_plant/{id}", dependencies=[Depends(get_current_superuser)])
+async def erase_db_plant(
+    request: Request,
+    id: int,
+    db: Annotated[AsyncSession, Depends(async_get_db)],
+) -> dict[str, str]:
+    """Permanently delete a plant (superuser only)."""
+    db_plant = await crud_plants.get(db=db, id=id, is_deleted=False, schema_to_select=PlantRead)
+    if db_plant is None:
+        raise NotFoundException("Plant not found")
+
+    await crud_plants.db_delete(db=db, id=id)
+    return {"message": "Plant deleted from the database"}

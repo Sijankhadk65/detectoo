@@ -1,0 +1,15 @@
+meta {
+  name: Get Plant
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/plant/{{plant_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

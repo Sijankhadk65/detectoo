@@ -1,0 +1,60 @@
+meta {
+  name: Create Recovery Plan
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/recovery-plan
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "plant_id": {{plant_id}},
+    "scan_id": {{scan_id}},
+    "condition": "Sunburn",
+    "severity": "Mild",
+    "summary": "Recover aloe vera from mild sunburn",
+    "estimated_recovery": "~7 days",
+    "do_list": [
+      "Move to bright indirect light",
+      "Water only when soil is fully dry"
+    ],
+    "dont_list": [
+      "Don't place back in direct sun"
+    ],
+    "signs_of_improvement": [
+      "New green growth at base",
+      "Leaves firm up and regain color"
+    ],
+    "steps": [
+      {
+        "title": "Relocate plant",
+        "description": "Move to east-facing window.",
+        "icon_code_point": 58356,
+        "step_order": 1
+      },
+      {
+        "title": "Trim damaged tips",
+        "description": "Snip browned tips at an angle.",
+        "icon_code_point": 59593,
+        "step_order": 2
+      }
+    ]
+  }
+}
+
+script:post-response {
+  if (res.status === 201 && res.body.id) {
+    bru.setEnvVar("recovery_plan_id", res.body.id);
+  }
+  if (res.status === 201 && res.body.steps && res.body.steps.length > 0) {
+    bru.setEnvVar("recovery_step_id", res.body.steps[0].id);
+  }
+}
