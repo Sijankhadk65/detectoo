@@ -1,8 +1,8 @@
-"""FastCRUD instances for RecoveryPlan and RecoveryStep."""
+"""FastCRUD instances for RecoveryPlan, RecoveryStep, and RecoveryStepPhoto."""
 
 from fastcrud import FastCRUD
 
-from ..models.recovery import RecoveryPlan, RecoveryStep
+from ..models.recovery import RecoveryPlan, RecoveryStep, RecoveryStepPhoto
 from ..schemas.recovery import (
     RecoveryPlanCreateInternal,
     RecoveryPlanDelete,
@@ -11,6 +11,8 @@ from ..schemas.recovery import (
     RecoveryPlanUpdateInternal,
     RecoveryStepCreateInternal,
     RecoveryStepDelete,
+    RecoveryStepPhotoCreateInternal,
+    RecoveryStepPhotoRead,
     RecoveryStepRead,
     RecoveryStepUpdate,
     RecoveryStepUpdateInternal,
@@ -35,3 +37,13 @@ CRUDRecoveryStep = FastCRUD[
     RecoveryStepRead,
 ]
 crud_recovery_steps = CRUDRecoveryStep(RecoveryStep)
+
+CRUDRecoveryStepPhoto = FastCRUD[
+    RecoveryStepPhoto,
+    RecoveryStepPhotoCreateInternal,
+    None,
+    None,
+    None,
+    RecoveryStepPhotoRead,
+]
+crud_recovery_step_photos = CRUDRecoveryStepPhoto(RecoveryStepPhoto)

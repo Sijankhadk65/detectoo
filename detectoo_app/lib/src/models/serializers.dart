@@ -19,6 +19,7 @@ part 'serializers.g.dart';
   Recovery,
   RecoveryPlan,
   RecoveryStep,
+  RecoveryStepPhoto,
   Reminder,
   ScanResult,
   DetectedIssue,

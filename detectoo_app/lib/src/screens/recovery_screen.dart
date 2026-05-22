@@ -1,11 +1,15 @@
+import 'dart:io';
+
 import 'package:built_collection/built_collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../data/api/api_exception.dart';
 import '../models/plant.dart';
 import '../models/recovery_plan.dart';
 import '../providers/api_providers.dart';
+import '../services/notification_service.dart';
 import '../widgets/gradient_banner.dart';
 import '../widgets/section_title.dart';
 import '../widgets/status_chip.dart';
@@ -13,13 +17,103 @@ import '../widgets/status_chip.dart';
 /// Recovery screen for the Detectoo application.
 ///
 /// Displays a detailed, easy-to-understand recovery plan for an
-/// affected plant. Designed to be informative for users with no
-/// prior plant care expertise.
-class RecoveryScreen extends ConsumerWidget {
+/// affected plant. Supports uploading progress photos to individual steps.
+class RecoveryScreen extends ConsumerStatefulWidget {
   const RecoveryScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RecoveryScreen> createState() => _RecoveryScreenState();
+}
+
+class _RecoveryScreenState extends ConsumerState<RecoveryScreen> {
+  /// Step IDs currently being uploaded to (to show per-step loading indicator).
+  final Set<int> _uploadingSteps = {};
+
+  /// Step IDs currently being marked as done.
+  final Set<int> _completingSteps = {};
+
+  Future<void> _markStepDone(RecoveryPlan plan, RecoveryStep step) async {
+    setState(() => _completingSteps.add(step.id));
+    try {
+      await ref.read(recoveryRepositoryProvider).updateRecoveryStep(
+            plan.id,
+            step.id,
+            completed: true,
+          );
+      await NotificationService.cancelStepReminder(step.id);
+      ref.invalidate(recoveryPlanForPlantProvider(plan.plantId));
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to update step. Try again.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _completingSteps.remove(step.id));
+    }
+  }
+
+  Future<void> _pickAndUploadPhoto(
+    RecoveryPlan plan,
+    RecoveryStep step,
+  ) async {
+    final picker = ImagePicker();
+    final source = await _askImageSource();
+    if (source == null || !mounted) return;
+
+    final picked = await picker.pickImage(source: source, imageQuality: 85);
+    if (picked == null || !mounted) return;
+
+    setState(() => _uploadingSteps.add(step.id));
+    try {
+      await ref.read(recoveryRepositoryProvider).uploadStepPhoto(
+            plan.id,
+            step.id,
+            File(picked.path),
+          );
+      ref.invalidate(recoveryPlanForPlantProvider(plan.plantId));
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to upload photo. Try again.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _uploadingSteps.remove(step.id));
+    }
+  }
+
+  Future<ImageSource?> _askImageSource() {
+    return showModalBottomSheet<ImageSource>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt_rounded),
+                title: const Text('Take a photo'),
+                onTap: () => Navigator.pop(ctx, ImageSource.camera),
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_rounded),
+                title: const Text('Choose from gallery'),
+                onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final plant = ModalRoute.of(context)?.settings.arguments as Plant?;
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -95,7 +189,7 @@ class RecoveryScreen extends ConsumerWidget {
                   icon: Icons.format_list_numbered_rounded,
                 ),
                 const SizedBox(height: 12),
-                _buildSteps(plan.steps, colorScheme),
+                _buildSteps(plan, plan.steps, colorScheme, _completingSteps),
                 const SizedBox(height: 24),
                 _buildDoAndDont(plan, colorScheme),
                 const SizedBox(height: 24),
@@ -441,11 +535,18 @@ class RecoveryScreen extends ConsumerWidget {
   }
 
   /// Builds the numbered recovery steps as a vertical timeline.
-  Widget _buildSteps(BuiltList<RecoveryStep> steps, ColorScheme colorScheme) {
+  Widget _buildSteps(
+    RecoveryPlan plan,
+    BuiltList<RecoveryStep> steps,
+    ColorScheme colorScheme,
+    Set<int> completingSteps,
+  ) {
     return Column(
       children: List.generate(steps.length, (index) {
         final step = steps[index];
         final isLast = index == steps.length - 1;
+        final isUploading = _uploadingSteps.contains(step.id);
+        final isCompleting = completingSteps.contains(step.id);
 
         return IntrinsicHeight(
           child: Row(
@@ -539,6 +640,51 @@ class RecoveryScreen extends ConsumerWidget {
                             StatusChip(
                               label: 'Done',
                               color: colorScheme.secondary,
+                            )
+                          else if (isCompleting)
+                            SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: colorScheme.secondary,
+                              ),
+                            )
+                          else
+                            GestureDetector(
+                              onTap: () => _markStepDone(plan, step),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: colorScheme.secondaryContainer
+                                      .withValues(alpha: 0.4),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: colorScheme.secondary
+                                        .withValues(alpha: 0.3),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.check_circle_outline_rounded,
+                                      size: 14,
+                                      color: colorScheme.secondary,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Mark done',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: colorScheme.secondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                         ],
                       ),
@@ -552,6 +698,9 @@ class RecoveryScreen extends ConsumerWidget {
                               colorScheme.onSurface.withValues(alpha: 0.65),
                         ),
                       ),
+                      // Photo gallery + add button
+                      const SizedBox(height: 12),
+                      _buildStepPhotoRow(plan, step, colorScheme, isUploading),
                     ],
                   ),
                 ),
@@ -560,6 +709,128 @@ class RecoveryScreen extends ConsumerWidget {
           ),
         );
       }),
+    );
+  }
+
+  /// Builds the horizontal photo strip and "Add photo" button for a step.
+  Widget _buildStepPhotoRow(
+    RecoveryPlan plan,
+    RecoveryStep step,
+    ColorScheme colorScheme,
+    bool isUploading,
+  ) {
+    final photos = step.photos;
+    return SizedBox(
+      height: 80,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          ...photos.map(
+            (photo) => GestureDetector(
+              onTap: () => _viewPhoto(photo.imageUrl),
+              child: Container(
+                width: 80,
+                height: 80,
+                margin: const EdgeInsets.only(right: 8),
+                clipBehavior: Clip.hardEdge,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: colorScheme.surfaceContainerHighest,
+                ),
+                child: Image.network(
+                  photo.imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stack) => Icon(
+                    Icons.broken_image_rounded,
+                    color: colorScheme.onSurface.withValues(alpha: 0.3),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          // Add photo button
+          GestureDetector(
+            onTap: isUploading ? null : () => _pickAndUploadPhoto(plan, step),
+            child: Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: colorScheme.primaryContainer.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: colorScheme.primary.withValues(alpha: 0.25),
+                  style: BorderStyle.solid,
+                ),
+              ),
+              child: isUploading
+                  ? Center(
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: colorScheme.primary,
+                        ),
+                      ),
+                    )
+                  : Icon(
+                      Icons.add_a_photo_rounded,
+                      size: 24,
+                      color: colorScheme.primary.withValues(alpha: 0.7),
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Opens a full-screen photo viewer.
+  void _viewPhoto(String imageUrl) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(12),
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.topRight,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stack) => const Icon(
+                  Icons.broken_image_rounded,
+                  color: Colors.white54,
+                  size: 60,
+                ),
+              ),
+            ),
+            Positioned(
+              top: -12,
+              right: -12,
+              child: GestureDetector(
+                onTap: () => Navigator.pop(ctx),
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: const BoxDecoration(
+                    color: Colors.black54,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.close_rounded,
+                    size: 18,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

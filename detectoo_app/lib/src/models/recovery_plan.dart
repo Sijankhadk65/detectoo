@@ -5,6 +5,30 @@ import 'package:flutter/material.dart' hide Builder;
 
 part 'recovery_plan.g.dart';
 
+/// A progress photo uploaded to a recovery step.
+abstract class RecoveryStepPhoto
+    implements Built<RecoveryStepPhoto, RecoveryStepPhotoBuilder> {
+  /// Server-assigned identifier.
+  int get id;
+
+  /// Step this photo is attached to.
+  int get recoveryStepId;
+
+  /// Full URL of the uploaded photo.
+  String get imageUrl;
+
+  /// When the photo was uploaded.
+  DateTime get createdAt;
+
+  RecoveryStepPhoto._();
+
+  factory RecoveryStepPhoto([void Function(RecoveryStepPhotoBuilder) updates]) =
+      _$RecoveryStepPhoto;
+
+  static Serializer<RecoveryStepPhoto> get serializer =>
+      _$recoveryStepPhotoSerializer;
+}
+
 /// A full recovery plan for a plant condition.
 abstract class RecoveryPlan
     implements Built<RecoveryPlan, RecoveryPlanBuilder> {
@@ -95,6 +119,9 @@ abstract class RecoveryStep
 
   /// Ordering within the plan.
   int get stepOrder;
+
+  /// Progress photos attached to this step.
+  BuiltList<RecoveryStepPhoto> get photos;
 
   /// Returns the [IconData] for this step's icon.
   @BuiltValueField(serialize: false)

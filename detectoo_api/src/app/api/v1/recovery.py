@@ -1,16 +1,19 @@
 """Recovery plan + step endpoints."""
 
+import os
+import uuid
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from fastcrud import PaginatedListResponse, compute_offset, paginated_response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...api.dependencies import get_current_user
+from ...core.config import settings
 from ...core.db.database import async_get_db
 from ...core.exceptions.http_exceptions import NotFoundException
 from ...crud.crud_plants import crud_plants
-from ...crud.crud_recovery import crud_recovery_plans, crud_recovery_steps
+from ...crud.crud_recovery import crud_recovery_plans, crud_recovery_step_photos, crud_recovery_steps
 from ...crud.crud_scans import crud_scans
 from ...schemas.plant import PlantRead
 from ...schemas.recovery import (
@@ -20,10 +23,15 @@ from ...schemas.recovery import (
     RecoveryPlanReadWithSteps,
     RecoveryPlanUpdate,
     RecoveryStepCreateInternal,
+    RecoveryStepPhotoCreateInternal,
+    RecoveryStepPhotoRead,
     RecoveryStepRead,
     RecoveryStepUpdate,
 )
 from ...schemas.scan import ScanRead
+
+_ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp", "image/heic"}
+_UPLOADS_RECOVERY_DIR = os.path.join(settings.UPLOADS_DIR, "recovery")
 
 router = APIRouter(tags=["recovery"])
 
@@ -130,7 +138,7 @@ async def read_recovery_plan(
     current_user: Annotated[dict, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(async_get_db)],
 ) -> dict[str, Any]:
-    """Get a single recovery plan with all its steps."""
+    """Get a single recovery plan with all its steps and their progress photos."""
     db_plan = await _assert_user_owns_plan(db=db, plan_id=id, user_id=current_user["id"])
 
     steps_data = await crud_recovery_steps.get_multi(
@@ -140,7 +148,19 @@ async def read_recovery_plan(
         sort_orders="asc",
     )
 
-    db_plan["steps"] = steps_data.get("data", [])
+    steps: list[dict[str, Any]] = []
+    for step in steps_data.get("data", []):
+        step_dict = dict(step)
+        photos_data = await crud_recovery_step_photos.get_multi(
+            db=db,
+            recovery_step_id=step_dict["id"],
+            sort_columns="created_at",
+            sort_orders="asc",
+        )
+        step_dict["photos"] = photos_data.get("data", [])
+        steps.append(step_dict)
+
+    db_plan["steps"] = steps
     return db_plan
 
 
@@ -191,3 +211,51 @@ async def update_recovery_step(
 
     await crud_recovery_steps.update(db=db, object=values, id=step_id)
     return {"message": "Recovery step updated"}
+
+
+@router.post(
+    "/recovery-plan/{plan_id}/step/{step_id}/photo",
+    response_model=RecoveryStepPhotoRead,
+    status_code=201,
+)
+async def upload_step_photo(
+    request: Request,
+    plan_id: int,
+    step_id: int,
+    photo: Annotated[UploadFile, File(description="Recovery progress photo")],
+    current_user: Annotated[dict, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(async_get_db)],
+) -> dict[str, Any]:
+    """Upload a progress photo for a recovery step."""
+    if photo.content_type not in _ALLOWED_CONTENT_TYPES:
+        raise HTTPException(status_code=422, detail=f"Unsupported image type: {photo.content_type}")
+
+    await _assert_user_owns_plan(db=db, plan_id=plan_id, user_id=current_user["id"])
+
+    db_step = await crud_recovery_steps.get(
+        db=db, id=step_id, recovery_plan_id=plan_id, schema_to_select=RecoveryStepRead
+    )
+    if db_step is None:
+        raise NotFoundException("Recovery step not found")
+
+    ext = (photo.filename or "photo.jpg").rsplit(".", 1)[-1].lower() or "jpg"
+    filename = f"{uuid.uuid4().hex}.{ext}"
+    os.makedirs(_UPLOADS_RECOVERY_DIR, exist_ok=True)
+    dest = os.path.join(_UPLOADS_RECOVERY_DIR, filename)
+    contents = await photo.read()
+    with open(dest, "wb") as f:
+        f.write(contents)
+
+    image_url = f"{settings.SERVER_URL}/uploads/recovery/{filename}"
+    photo_internal = RecoveryStepPhotoCreateInternal(
+        recovery_step_id=step_id,
+        image_url=image_url,
+    )
+    created_photo = await crud_recovery_step_photos.create(
+        db=db, object=photo_internal, schema_to_select=RecoveryStepPhotoRead
+    )
+    if created_photo is None:
+        os.remove(dest)
+        raise NotFoundException("Failed to save photo")
+
+    return dict(created_photo)
