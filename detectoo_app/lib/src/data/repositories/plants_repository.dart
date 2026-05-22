@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import '../../models/plant.dart';
+import '../../models/plant_detection.dart';
 
 /// Domain contract for plant management.
 ///
@@ -21,13 +22,16 @@ abstract class PlantsRepository {
 
   /// Creates a new plant owned by the current user.
   ///
-  /// [healthStatus] defaults to [PlantHealthStatus.healthy] on the
-  /// server when omitted.
+  /// Pass [imageUrl] when the photo was already uploaded via
+  /// [detectPlantFromPhoto] so the plant links to that image.
   Future<Plant> createPlant({
     required String name,
     required int iconCodePoint,
     PlantHealthStatus healthStatus = PlantHealthStatus.healthy,
     DateTime? lastWatered,
+    String? imageUrl,
+    String? sunlight,
+    String? humidity,
   });
 
   /// Updates mutable fields on an existing plant. Only non-null
@@ -44,7 +48,11 @@ abstract class PlantsRepository {
   /// stops appearing in subsequent `listPlants` results.
   Future<void> deletePlant(int id);
 
-  /// Uploads [photo] to the backend and returns the mock plant record
-  /// the server creates from it.
-  Future<Plant> createPlantFromPhoto(File photo);
+  /// Uploads [photo] to the backend, runs Claude detection, and returns
+  /// the suggested plant data for the user to confirm.
+  ///
+  /// The image is saved on the server but no plant record is created yet.
+  /// Call [createPlant] with the confirmed values and the returned
+  /// [PlantDetection.imageUrl] to finish creation.
+  Future<PlantDetection> detectPlantFromPhoto(File photo);
 }

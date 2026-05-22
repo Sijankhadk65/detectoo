@@ -28,16 +28,6 @@ class PlantsScreen extends ConsumerWidget {
           data: (plants) => _buildContent(context, ref, colorScheme, plants),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.pushNamed(context, Routes.addPlant),
-        backgroundColor: colorScheme.secondary,
-        foregroundColor: colorScheme.onSecondary,
-        icon: const Icon(Icons.add_a_photo_rounded),
-        label: const Text(
-          'Add Plant',
-          style: TextStyle(fontWeight: FontWeight.w600),
-        ),
-      ),
     );
   }
 

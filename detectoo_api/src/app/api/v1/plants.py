@@ -13,7 +13,15 @@ from ...core.config import settings
 from ...core.db.database import async_get_db
 from ...core.exceptions.http_exceptions import NotFoundException
 from ...crud.crud_plants import crud_plants
-from ...schemas.plant import PlantCreate, PlantCreateInternal, PlantRead, PlantUpdate
+from ...schemas.plant import (
+    PlantCreate,
+    PlantCreateInternal,
+    PlantDetectionRead,
+    PlantRead,
+    PlantUpdate,
+    RecoveryPlanDetectionRead,
+    RecoveryStepDetectionRead,
+)
 from ...services.plant_detection import PlantDetectionError, detect_plant
 
 _ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp", "image/heic"}
@@ -32,7 +40,6 @@ async def create_plant(
     """Create a new plant for the authenticated user."""
     plant_internal_dict = plant.model_dump()
     plant_internal_dict["created_by_user_id"] = current_user["id"]
-
     plant_internal = PlantCreateInternal(**plant_internal_dict)
     created_plant = await crud_plants.create(db=db, object=plant_internal, schema_to_select=PlantRead)
 
@@ -42,16 +49,19 @@ async def create_plant(
     return created_plant
 
 
-@router.post("/plant/from-photo", response_model=PlantRead, status_code=201)
-async def create_plant_from_photo(
+@router.post("/plant/from-photo", response_model=PlantDetectionRead, status_code=200)
+async def detect_plant_from_photo(
     request: Request,
     photo: Annotated[UploadFile, File(description="Plant photo")],
     current_user: Annotated[dict, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(async_get_db)],
-) -> dict[str, Any]:
-    """Accept a plant photo, identify it with Claude, and create a plant record.
+) -> PlantDetectionRead:
+    """Save the uploaded photo and return Claude's plant detection result.
 
-    The image is stored under UPLOADS_DIR and exposed via /uploads/plants/<filename>.
+    The plant is NOT created yet — the client should display the result
+    to the user for confirmation, then call POST /plant with the
+    confirmed values and the returned image_url.
+
     Returns 422 if the photo is not a recognisable plant.
     """
     if photo.content_type not in _ALLOWED_CONTENT_TYPES:
@@ -73,18 +83,36 @@ async def create_plant_from_photo(
 
     image_url = f"{settings.SERVER_URL}/uploads/plants/{filename}"
 
-    plant_internal = PlantCreateInternal(
+    disease = None
+    if detection.recovery_plan is not None:
+        rp = detection.recovery_plan
+        disease = RecoveryPlanDetectionRead(
+            condition=rp.condition,
+            severity=rp.severity,
+            summary=rp.summary,
+            estimated_recovery=rp.estimated_recovery,
+            do_list=rp.do_list,
+            dont_list=rp.dont_list,
+            signs_of_improvement=rp.signs_of_improvement,
+            steps=[
+                RecoveryStepDetectionRead(
+                    title=s.title,
+                    description=s.description,
+                    step_order=s.step_order,
+                )
+                for s in rp.steps
+            ],
+        )
+
+    return PlantDetectionRead(
         name=detection.name,
         health_status=detection.health_status,
         icon_code_point=detection.icon_code_point,
-        created_by_user_id=current_user["id"],
         image_url=image_url,
+        sunlight=detection.sunlight,
+        humidity=detection.humidity,
+        disease=disease,
     )
-    created_plant = await crud_plants.create(db=db, object=plant_internal, schema_to_select=PlantRead)
-    if created_plant is None:
-        raise NotFoundException("Failed to create plant")
-
-    return created_plant
 
 
 @router.get("/plants", response_model=PaginatedListResponse[PlantRead])

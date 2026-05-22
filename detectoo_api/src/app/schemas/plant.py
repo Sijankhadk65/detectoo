@@ -39,8 +39,52 @@ class PlantRead(BaseModel):
     last_watered: datetime | None
     icon_code_point: int
     image_url: str | None
+    sunlight: str | None
+    humidity: str | None
     created_by_user_id: int
     created_at: datetime
+
+
+class RecoveryStepDetectionRead(BaseModel):
+    """A single recovery step suggested by Claude during plant detection."""
+
+    title: str
+    description: str
+    step_order: int
+
+
+class RecoveryPlanDetectionRead(BaseModel):
+    """Disease/infestation data returned alongside the plant detection result.
+
+    Only present when Claude identifies a condition requiring treatment.
+    """
+
+    condition: str
+    severity: str
+    summary: str
+    estimated_recovery: str | None
+    do_list: list[str]
+    dont_list: list[str]
+    signs_of_improvement: list[str]
+    steps: list[RecoveryStepDetectionRead]
+
+
+class PlantDetectionRead(BaseModel):
+    """Detection result returned by the /plant/from-photo endpoint.
+
+    Contains Claude's best guess for the plant. The client should
+    present this to the user for confirmation before calling POST /plant.
+    If a disease or infestation is detected, ``disease`` carries a full
+    recovery plan payload ready to pass to POST /recovery-plan.
+    """
+
+    name: str
+    health_status: str
+    icon_code_point: int
+    image_url: str
+    sunlight: str
+    humidity: str
+    disease: RecoveryPlanDetectionRead | None = None
 
 
 class PlantCreate(PlantBase):
@@ -49,13 +93,15 @@ class PlantCreate(PlantBase):
     model_config = ConfigDict(extra="forbid")
 
     last_watered: datetime | None = None
+    image_url: str | None = None
+    sunlight: str | None = None
+    humidity: str | None = None
 
 
 class PlantCreateInternal(PlantCreate):
     """Internal schema that includes the user ID."""
 
     created_by_user_id: int
-    image_url: str | None = None
 
 
 class PlantUpdate(BaseModel):

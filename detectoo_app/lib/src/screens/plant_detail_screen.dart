@@ -64,6 +64,34 @@ class _PlantDetailScreenState extends ConsumerState<PlantDetailScreen> {
     }
   }
 
+  String _sunlightLabel(String? value) {
+    switch (value) {
+      case 'low':
+        return 'Low Light';
+      case 'indirect':
+        return 'Indirect';
+      case 'bright':
+        return 'Bright';
+      case 'direct':
+        return 'Direct Sun';
+      default:
+        return '—';
+    }
+  }
+
+  String _humidityLabel(String? value) {
+    switch (value) {
+      case 'low':
+        return 'Low';
+      case 'medium':
+        return 'Medium';
+      case 'high':
+        return 'High';
+      default:
+        return '—';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final plant = ModalRoute.of(context)!.settings.arguments as Plant;
@@ -292,19 +320,20 @@ class _PlantDetailScreenState extends ConsumerState<PlantDetailScreen> {
         Expanded(
           child: _buildInfoCard(
             'Sunlight',
-            'Indirect',
+            _sunlightLabel(plant.sunlight),
             Icons.wb_sunny_outlined,
             colorScheme,
-            iconColor: colorScheme.secondary,
+            iconColor: const Color(0xFFFF8F00),
           ),
         ),
         const SizedBox(width: 10),
         Expanded(
           child: _buildInfoCard(
             'Humidity',
-            'Medium',
+            _humidityLabel(plant.humidity),
             Icons.opacity_outlined,
             colorScheme,
+            iconColor: const Color(0xFF0277BD),
           ),
         ),
       ],
