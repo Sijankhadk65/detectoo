@@ -26,5 +26,8 @@ class User(Base):
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=None)
     is_deleted: Mapped[bool] = mapped_column(default=False, index=True)
     is_superuser: Mapped[bool] = mapped_column(default=False)
+    is_verified: Mapped[bool] = mapped_column(default=False)
+    verification_code: Mapped[str | None] = mapped_column(String(6), default=None)
+    verification_code_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=None)
 
     tier_id: Mapped[int | None] = mapped_column(ForeignKey("tier.id"), index=True, default=None, init=False)

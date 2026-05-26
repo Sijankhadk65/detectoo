@@ -33,6 +33,11 @@ class _$UserSerializer implements StructuredSerializer<User> {
         object.memberSince,
         specifiedType: const FullType(String),
       ),
+      'isVerified',
+      serializers.serialize(
+        object.isVerified,
+        specifiedType: const FullType(bool),
+      ),
     ];
 
     return result;
@@ -76,6 +81,14 @@ class _$UserSerializer implements StructuredSerializer<User> {
                   )!
                   as String;
           break;
+        case 'isVerified':
+          result.isVerified =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )!
+                  as bool;
+          break;
       }
     }
 
@@ -90,12 +103,18 @@ class _$User extends User {
   final String email;
   @override
   final String memberSince;
+  @override
+  final bool isVerified;
 
   factory _$User([void Function(UserBuilder)? updates]) =>
       (UserBuilder()..update(updates))._build();
 
-  _$User._({required this.name, required this.email, required this.memberSince})
-    : super._();
+  _$User._({
+    required this.name,
+    required this.email,
+    required this.memberSince,
+    required this.isVerified,
+  }) : super._();
   @override
   User rebuild(void Function(UserBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -109,7 +128,8 @@ class _$User extends User {
     return other is User &&
         name == other.name &&
         email == other.email &&
-        memberSince == other.memberSince;
+        memberSince == other.memberSince &&
+        isVerified == other.isVerified;
   }
 
   @override
@@ -118,6 +138,7 @@ class _$User extends User {
     _$hash = $jc(_$hash, name.hashCode);
     _$hash = $jc(_$hash, email.hashCode);
     _$hash = $jc(_$hash, memberSince.hashCode);
+    _$hash = $jc(_$hash, isVerified.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -127,7 +148,8 @@ class _$User extends User {
     return (newBuiltValueToStringHelper(r'User')
           ..add('name', name)
           ..add('email', email)
-          ..add('memberSince', memberSince))
+          ..add('memberSince', memberSince)
+          ..add('isVerified', isVerified))
         .toString();
   }
 }
@@ -147,6 +169,10 @@ class UserBuilder implements Builder<User, UserBuilder> {
   String? get memberSince => _$this._memberSince;
   set memberSince(String? memberSince) => _$this._memberSince = memberSince;
 
+  bool? _isVerified;
+  bool? get isVerified => _$this._isVerified;
+  set isVerified(bool? isVerified) => _$this._isVerified = isVerified;
+
   UserBuilder();
 
   UserBuilder get _$this {
@@ -155,6 +181,7 @@ class UserBuilder implements Builder<User, UserBuilder> {
       _name = $v.name;
       _email = $v.email;
       _memberSince = $v.memberSince;
+      _isVerified = $v.isVerified;
       _$v = null;
     }
     return this;
@@ -183,6 +210,11 @@ class UserBuilder implements Builder<User, UserBuilder> {
             memberSince,
             r'User',
             'memberSince',
+          ),
+          isVerified: BuiltValueNullFieldError.checkNotNull(
+            isVerified,
+            r'User',
+            'isVerified',
           ),
         );
     replace(_$result);

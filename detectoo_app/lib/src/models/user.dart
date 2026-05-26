@@ -14,6 +14,9 @@ abstract class User implements Built<User, UserBuilder> {
   /// When the user joined (e.g. "Apr 2026").
   String get memberSince;
 
+  /// Whether the user has verified their email address.
+  bool get isVerified;
+
   User._();
 
   factory User([void Function(UserBuilder) updates]) = _$User;

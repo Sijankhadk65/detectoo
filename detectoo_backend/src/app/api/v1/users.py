@@ -1,26 +1,32 @@
+import secrets
+from datetime import UTC, datetime, timedelta
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastcrud import PaginatedListResponse, compute_offset, paginated_response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...api.dependencies import get_current_superuser, get_current_user
 from ...core.db.database import async_get_db
+from ...core.email import send_verification_email
 from ...core.exceptions.http_exceptions import DuplicateValueException, ForbiddenException, NotFoundException
+from ...core.logger import logging
 from ...core.security import blacklist_token, get_password_hash, oauth2_scheme
 from ...crud.crud_rate_limit import crud_rate_limits
 from ...crud.crud_tier import crud_tiers
 from ...crud.crud_users import crud_users
 from ...schemas.tier import TierRead
-from ...schemas.user import UserCreate, UserCreateInternal, UserRead, UserTierUpdate, UserUpdate
+from ...schemas.user import EmailVerifyRequest, UserCreate, UserCreateInternal, UserRead, UserTierUpdate, UserUpdate
 
 router = APIRouter(tags=["users"])
+logger = logging.getLogger(__name__)
 
 
 @router.post("/user", response_model=UserRead, status_code=201)
 async def write_user(
     request: Request, user: UserCreate, db: Annotated[AsyncSession, Depends(async_get_db)]
 ) -> dict[str, Any]:
+    """Create a new user account and send an email verification code."""
     email_row = await crud_users.exists(db=db, email=user.email)
     if email_row:
         raise DuplicateValueException("Email is already registered")
@@ -29,17 +35,84 @@ async def write_user(
     if username_row:
         raise DuplicateValueException("Username not available")
 
-    user_internal_dict = user.model_dump()
-    user_internal_dict["hashed_password"] = get_password_hash(password=user_internal_dict["password"])
-    del user_internal_dict["password"]
+    code = f"{secrets.randbelow(1000000):06d}"
+    expires_at = datetime.now(UTC) + timedelta(minutes=15)
 
-    user_internal = UserCreateInternal(**user_internal_dict)
+    user_internal = UserCreateInternal(
+        name=user.name,
+        username=user.username,
+        email=user.email,
+        hashed_password=get_password_hash(password=user.password),
+        verification_code=code,
+        verification_code_expires_at=expires_at,
+    )
     created_user = await crud_users.create(db=db, object=user_internal, schema_to_select=UserRead)
 
     if created_user is None:
         raise NotFoundException("Failed to create user")
 
+    try:
+        await send_verification_email(to=user.email, code=code)
+    except Exception as exc:
+        logger.warning(f"Failed to send verification email to {user.email}: {exc}")
+
     return created_user
+
+
+@router.post("/verify-email", response_model=UserRead)
+async def verify_email(
+    request: Request,
+    body: EmailVerifyRequest,
+    current_user: Annotated[dict, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(async_get_db)],
+) -> dict[str, Any]:
+    """Verify the current user's email with a 6-digit OTP code."""
+    if current_user.get("is_verified"):
+        db_user = await crud_users.get(db=db, id=current_user["id"], schema_to_select=UserRead)
+        if db_user is None:
+            raise NotFoundException("User not found")
+        return db_user
+
+    if current_user.get("verification_code") != body.code:
+        raise HTTPException(status_code=400, detail="Invalid verification code.")
+
+    expires_at: datetime | None = current_user.get("verification_code_expires_at")
+    if expires_at is not None and expires_at < datetime.now(UTC):
+        raise HTTPException(status_code=400, detail="Verification code has expired. Request a new one.")
+
+    await crud_users.update(db=db, object={"is_verified": True}, id=current_user["id"])
+
+    updated_user = await crud_users.get(db=db, id=current_user["id"], schema_to_select=UserRead)
+    if updated_user is None:
+        raise NotFoundException("User not found")
+    return updated_user
+
+
+@router.post("/resend-verification")
+async def resend_verification(
+    request: Request,
+    current_user: Annotated[dict, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(async_get_db)],
+) -> dict[str, str]:
+    """Issue a fresh 6-digit OTP and resend the verification email."""
+    if current_user.get("is_verified"):
+        raise HTTPException(status_code=400, detail="Email is already verified.")
+
+    code = f"{secrets.randbelow(1000000):06d}"
+    expires_at = datetime.now(UTC) + timedelta(minutes=15)
+
+    await crud_users.update(
+        db=db,
+        object={"verification_code": code, "verification_code_expires_at": expires_at},
+        id=current_user["id"],
+    )
+
+    try:
+        await send_verification_email(to=current_user["email"], code=code)
+    except Exception as exc:
+        logger.warning(f"Failed to resend verification email to {current_user['email']}: {exc}")
+
+    return {"message": "Verification code sent."}
 
 
 @router.get("/users", response_model=PaginatedListResponse[UserRead])

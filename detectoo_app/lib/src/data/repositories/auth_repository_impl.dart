@@ -72,6 +72,16 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<void> verifyEmail(String code) async {
+    await _client.post('/verify-email', body: {'code': code});
+  }
+
+  @override
+  Future<void> resendVerificationCode() async {
+    await _client.post('/resend-verification');
+  }
+
+  @override
   Future<User> signUp({
     required String name,
     required String username,
@@ -113,7 +123,8 @@ class AuthRepositoryImpl implements AuthRepository {
       (b) => b
         ..name = json['name'] as String
         ..email = json['email'] as String
-        ..memberSince = '',
+        ..memberSince = ''
+        ..isVerified = (json['is_verified'] as bool? ?? false),
     );
   }
 }

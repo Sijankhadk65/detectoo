@@ -15,4 +15,5 @@ class Routes {
   static const String recovery = '/recovery';
   static const String addPlant = '/add-plant';
   static const String signUp = '/sign-up';
+  static const String verifyEmail = '/verify-email';
 }

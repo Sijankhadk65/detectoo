@@ -105,7 +105,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     auth.when(
       data: (user) {
         if (user != null) {
-          Navigator.pushReplacementNamed(context, Routes.home);
+          final destination =
+              user.isVerified ? Routes.home : Routes.verifyEmail;
+          Navigator.pushReplacementNamed(context, destination);
         }
       },
       error: (error, _) {

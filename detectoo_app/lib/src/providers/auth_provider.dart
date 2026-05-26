@@ -32,6 +32,11 @@ class AuthNotifier extends AsyncNotifier<User?> {
     });
   }
 
+  /// Re-fetches the current user from the server and updates the state.
+  Future<void> refreshCurrentUser() async {
+    state = await AsyncValue.guard(() => _repo.fetchCurrentUser());
+  }
+
   /// Creates a new account, logs in, and loads the user profile.
   Future<void> signUp({
     required String name,

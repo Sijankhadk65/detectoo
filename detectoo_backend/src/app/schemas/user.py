@@ -26,6 +26,7 @@ class UserRead(BaseModel):
     username: Annotated[str, Field(min_length=2, max_length=20, pattern=r"^[a-z0-9]+$", examples=["userson"])]
     email: Annotated[EmailStr, Field(examples=["user.userson@example.com"])]
     profile_image_url: str
+    is_verified: bool
     tier_id: int | None
 
 
@@ -37,6 +38,14 @@ class UserCreate(UserBase):
 
 class UserCreateInternal(UserBase):
     hashed_password: str
+    verification_code: str
+    verification_code_expires_at: datetime
+
+
+class EmailVerifyRequest(BaseModel):
+    """Body for the POST /verify-email endpoint."""
+
+    code: Annotated[str, Field(min_length=6, max_length=6, pattern=r"^\d{6}$", examples=["123456"])]
 
 
 class UserUpdate(BaseModel):

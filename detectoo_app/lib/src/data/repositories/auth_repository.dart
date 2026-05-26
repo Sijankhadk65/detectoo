@@ -27,6 +27,12 @@ abstract class AuthRepository {
   /// between the login screen and the home screen.
   Future<User?> restoreSession();
 
+  /// Verifies the current user's email with a 6-digit OTP code.
+  Future<void> verifyEmail(String code);
+
+  /// Requests a new verification code to be sent to the current user's email.
+  Future<void> resendVerificationCode();
+
   /// Creates a new account and returns the authenticated user.
   ///
   /// On success the session token is persisted exactly as it would be

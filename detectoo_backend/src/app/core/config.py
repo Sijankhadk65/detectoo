@@ -101,7 +101,10 @@ class FirstUserSettings(BaseSettings):
 
 
 class TestSettings(BaseSettings):
-    ...
+    TEST_USER_NAME: str = "Tester User"
+    TEST_USER_USERNAME: str = "testeruser"
+    TEST_USER_EMAIL: str = "test@tester.com"
+    TEST_USER_PASSWORD: str = "Str1ngT3st!"
 
 
 class RedisCacheSettings(BaseSettings):
@@ -159,6 +162,11 @@ class CRUDAdminSettings(BaseSettings):
     CRUD_ADMIN_REDIS_SSL: bool = False
 
 
+class ResendSettings(BaseSettings):
+    RESEND_API_KEY: str = ""
+    EMAIL_FROM: str = "noreply@detectoo.com"
+
+
 class EnvironmentOption(str, Enum):
     LOCAL = "local"
     STAGING = "staging"
@@ -192,6 +200,7 @@ class Settings(
     CORSSettings,
     FileLoggerSettings,
     ConsoleLoggerSettings,
+    ResendSettings,
 ):
     model_config = SettingsConfigDict(
         env_file=os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", ".env"),
