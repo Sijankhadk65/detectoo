@@ -32,6 +32,22 @@ class AuthNotifier extends AsyncNotifier<User?> {
     });
   }
 
+  /// Creates a new account, logs in, and loads the user profile.
+  Future<void> signUp({
+    required String name,
+    required String username,
+    required String email,
+    required String password,
+  }) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() => _repo.signUp(
+          name: name,
+          username: username,
+          email: email,
+          password: password,
+        ));
+  }
+
   /// Signs out the current user. After this returns the state is
   /// `AsyncValue.data(null)` regardless of whether server-side
   /// revocation succeeded — the token is always cleared locally.

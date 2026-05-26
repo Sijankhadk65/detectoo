@@ -311,9 +311,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         ),
         GestureDetector(
-          onTap: () {
-            // TODO: Navigate to sign-up screen.
-          },
+          onTap: () => Navigator.pushReplacementNamed(context, Routes.signUp),
           child: Text(
             'Sign Up',
             style: TextStyle(
