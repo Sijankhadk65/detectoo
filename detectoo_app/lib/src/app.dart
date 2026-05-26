@@ -4,6 +4,7 @@ import 'routes.dart';
 import 'screens/add_plant_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/plant_detail_screen.dart';
+import 'screens/sign_up_screen.dart';
 import 'screens/recovery_screen.dart';
 import 'screens/splash_screen.dart';
 import 'widgets/bottom_nav_bar.dart';
@@ -40,6 +41,7 @@ class DetectooApp extends StatelessWidget {
         Routes.plantDetail: (context) => const PlantDetailScreen(),
         Routes.recovery: (context) => const RecoveryScreen(),
         Routes.addPlant: (context) => const AddPlantScreen(),
+        Routes.signUp: (context) => const SignUpScreen(),
       },
     );
   }

@@ -14,6 +14,7 @@ Serializers _$serializers =
           ..add(Recovery.serializer)
           ..add(RecoveryPlan.serializer)
           ..add(RecoveryStep.serializer)
+          ..add(RecoveryStepPhoto.serializer)
           ..add(Reminder.serializer)
           ..add(ScanResult.serializer)
           ..add(Task.serializer)
@@ -37,6 +38,12 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),
             () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(RecoveryStepPhoto),
+            ]),
+            () => ListBuilder<RecoveryStepPhoto>(),
           ))
         .build();
 

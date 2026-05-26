@@ -72,6 +72,25 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<User> signUp({
+    required String name,
+    required String username,
+    required String email,
+    required String password,
+  }) async {
+    await _client.post(
+      '/user',
+      body: {
+        'name': name,
+        'username': username,
+        'email': email,
+        'password': password,
+      },
+    );
+    return login(email: email, password: password);
+  }
+
+  @override
   Future<void> logout() async {
     final token = await _tokenStorage.readAccessToken();
     if (token != null && token.isNotEmpty) {

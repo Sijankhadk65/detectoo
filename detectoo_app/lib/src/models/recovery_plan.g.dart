@@ -6,8 +6,99 @@ part of 'recovery_plan.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+Serializer<RecoveryStepPhoto> _$recoveryStepPhotoSerializer =
+    _$RecoveryStepPhotoSerializer();
 Serializer<RecoveryPlan> _$recoveryPlanSerializer = _$RecoveryPlanSerializer();
 Serializer<RecoveryStep> _$recoveryStepSerializer = _$RecoveryStepSerializer();
+
+class _$RecoveryStepPhotoSerializer
+    implements StructuredSerializer<RecoveryStepPhoto> {
+  @override
+  final Iterable<Type> types = const [RecoveryStepPhoto, _$RecoveryStepPhoto];
+  @override
+  final String wireName = 'RecoveryStepPhoto';
+
+  @override
+  Iterable<Object?> serialize(
+    Serializers serializers,
+    RecoveryStepPhoto object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
+    final result = <Object?>[
+      'id',
+      serializers.serialize(object.id, specifiedType: const FullType(int)),
+      'recoveryStepId',
+      serializers.serialize(
+        object.recoveryStepId,
+        specifiedType: const FullType(int),
+      ),
+      'imageUrl',
+      serializers.serialize(
+        object.imageUrl,
+        specifiedType: const FullType(String),
+      ),
+      'createdAt',
+      serializers.serialize(
+        object.createdAt,
+        specifiedType: const FullType(DateTime),
+      ),
+    ];
+
+    return result;
+  }
+
+  @override
+  RecoveryStepPhoto deserialize(
+    Serializers serializers,
+    Iterable<Object?> serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
+    final result = RecoveryStepPhotoBuilder();
+
+    final iterator = serialized.iterator;
+    while (iterator.moveNext()) {
+      final key = iterator.current! as String;
+      iterator.moveNext();
+      final Object? value = iterator.current;
+      switch (key) {
+        case 'id':
+          result.id =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(int),
+                  )!
+                  as int;
+          break;
+        case 'recoveryStepId':
+          result.recoveryStepId =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(int),
+                  )!
+                  as int;
+          break;
+        case 'imageUrl':
+          result.imageUrl =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )!
+                  as String;
+          break;
+        case 'createdAt':
+          result.createdAt =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )!
+                  as DateTime;
+          break;
+      }
+    }
+
+    return result.build();
+  }
+}
 
 class _$RecoveryPlanSerializer implements StructuredSerializer<RecoveryPlan> {
   @override
@@ -290,6 +381,13 @@ class _$RecoveryStepSerializer implements StructuredSerializer<RecoveryStep> {
         object.stepOrder,
         specifiedType: const FullType(int),
       ),
+      'photos',
+      serializers.serialize(
+        object.photos,
+        specifiedType: const FullType(BuiltList, const [
+          const FullType(RecoveryStepPhoto),
+        ]),
+      ),
     ];
 
     return result;
@@ -365,10 +463,159 @@ class _$RecoveryStepSerializer implements StructuredSerializer<RecoveryStep> {
                   )!
                   as int;
           break;
+        case 'photos':
+          result.photos.replace(
+            serializers.deserialize(
+                  value,
+                  specifiedType: const FullType(BuiltList, const [
+                    const FullType(RecoveryStepPhoto),
+                  ]),
+                )!
+                as BuiltList<Object?>,
+          );
+          break;
       }
     }
 
     return result.build();
+  }
+}
+
+class _$RecoveryStepPhoto extends RecoveryStepPhoto {
+  @override
+  final int id;
+  @override
+  final int recoveryStepId;
+  @override
+  final String imageUrl;
+  @override
+  final DateTime createdAt;
+
+  factory _$RecoveryStepPhoto([
+    void Function(RecoveryStepPhotoBuilder)? updates,
+  ]) => (RecoveryStepPhotoBuilder()..update(updates))._build();
+
+  _$RecoveryStepPhoto._({
+    required this.id,
+    required this.recoveryStepId,
+    required this.imageUrl,
+    required this.createdAt,
+  }) : super._();
+  @override
+  RecoveryStepPhoto rebuild(void Function(RecoveryStepPhotoBuilder) updates) =>
+      (toBuilder()..update(updates)).build();
+
+  @override
+  RecoveryStepPhotoBuilder toBuilder() =>
+      RecoveryStepPhotoBuilder()..replace(this);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(other, this)) return true;
+    return other is RecoveryStepPhoto &&
+        id == other.id &&
+        recoveryStepId == other.recoveryStepId &&
+        imageUrl == other.imageUrl &&
+        createdAt == other.createdAt;
+  }
+
+  @override
+  int get hashCode {
+    var _$hash = 0;
+    _$hash = $jc(_$hash, id.hashCode);
+    _$hash = $jc(_$hash, recoveryStepId.hashCode);
+    _$hash = $jc(_$hash, imageUrl.hashCode);
+    _$hash = $jc(_$hash, createdAt.hashCode);
+    _$hash = $jf(_$hash);
+    return _$hash;
+  }
+
+  @override
+  String toString() {
+    return (newBuiltValueToStringHelper(r'RecoveryStepPhoto')
+          ..add('id', id)
+          ..add('recoveryStepId', recoveryStepId)
+          ..add('imageUrl', imageUrl)
+          ..add('createdAt', createdAt))
+        .toString();
+  }
+}
+
+class RecoveryStepPhotoBuilder
+    implements Builder<RecoveryStepPhoto, RecoveryStepPhotoBuilder> {
+  _$RecoveryStepPhoto? _$v;
+
+  int? _id;
+  int? get id => _$this._id;
+  set id(int? id) => _$this._id = id;
+
+  int? _recoveryStepId;
+  int? get recoveryStepId => _$this._recoveryStepId;
+  set recoveryStepId(int? recoveryStepId) =>
+      _$this._recoveryStepId = recoveryStepId;
+
+  String? _imageUrl;
+  String? get imageUrl => _$this._imageUrl;
+  set imageUrl(String? imageUrl) => _$this._imageUrl = imageUrl;
+
+  DateTime? _createdAt;
+  DateTime? get createdAt => _$this._createdAt;
+  set createdAt(DateTime? createdAt) => _$this._createdAt = createdAt;
+
+  RecoveryStepPhotoBuilder();
+
+  RecoveryStepPhotoBuilder get _$this {
+    final $v = _$v;
+    if ($v != null) {
+      _id = $v.id;
+      _recoveryStepId = $v.recoveryStepId;
+      _imageUrl = $v.imageUrl;
+      _createdAt = $v.createdAt;
+      _$v = null;
+    }
+    return this;
+  }
+
+  @override
+  void replace(RecoveryStepPhoto other) {
+    _$v = other as _$RecoveryStepPhoto;
+  }
+
+  @override
+  void update(void Function(RecoveryStepPhotoBuilder)? updates) {
+    if (updates != null) updates(this);
+  }
+
+  @override
+  RecoveryStepPhoto build() => _build();
+
+  _$RecoveryStepPhoto _build() {
+    final _$result =
+        _$v ??
+        _$RecoveryStepPhoto._(
+          id: BuiltValueNullFieldError.checkNotNull(
+            id,
+            r'RecoveryStepPhoto',
+            'id',
+          ),
+          recoveryStepId: BuiltValueNullFieldError.checkNotNull(
+            recoveryStepId,
+            r'RecoveryStepPhoto',
+            'recoveryStepId',
+          ),
+          imageUrl: BuiltValueNullFieldError.checkNotNull(
+            imageUrl,
+            r'RecoveryStepPhoto',
+            'imageUrl',
+          ),
+          createdAt: BuiltValueNullFieldError.checkNotNull(
+            createdAt,
+            r'RecoveryStepPhoto',
+            'createdAt',
+          ),
+        );
+    replace(_$result);
+    return _$result;
   }
 }
 
@@ -685,6 +932,8 @@ class _$RecoveryStep extends RecoveryStep {
   final bool completed;
   @override
   final int stepOrder;
+  @override
+  final BuiltList<RecoveryStepPhoto> photos;
 
   factory _$RecoveryStep([void Function(RecoveryStepBuilder)? updates]) =>
       (RecoveryStepBuilder()..update(updates))._build();
@@ -697,6 +946,7 @@ class _$RecoveryStep extends RecoveryStep {
     required this.iconCodePoint,
     required this.completed,
     required this.stepOrder,
+    required this.photos,
   }) : super._();
   @override
   RecoveryStep rebuild(void Function(RecoveryStepBuilder) updates) =>
@@ -715,7 +965,8 @@ class _$RecoveryStep extends RecoveryStep {
         description == other.description &&
         iconCodePoint == other.iconCodePoint &&
         completed == other.completed &&
-        stepOrder == other.stepOrder;
+        stepOrder == other.stepOrder &&
+        photos == other.photos;
   }
 
   @override
@@ -728,6 +979,7 @@ class _$RecoveryStep extends RecoveryStep {
     _$hash = $jc(_$hash, iconCodePoint.hashCode);
     _$hash = $jc(_$hash, completed.hashCode);
     _$hash = $jc(_$hash, stepOrder.hashCode);
+    _$hash = $jc(_$hash, photos.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -741,7 +993,8 @@ class _$RecoveryStep extends RecoveryStep {
           ..add('description', description)
           ..add('iconCodePoint', iconCodePoint)
           ..add('completed', completed)
-          ..add('stepOrder', stepOrder))
+          ..add('stepOrder', stepOrder)
+          ..add('photos', photos))
         .toString();
   }
 }
@@ -780,6 +1033,11 @@ class RecoveryStepBuilder
   int? get stepOrder => _$this._stepOrder;
   set stepOrder(int? stepOrder) => _$this._stepOrder = stepOrder;
 
+  ListBuilder<RecoveryStepPhoto>? _photos;
+  ListBuilder<RecoveryStepPhoto> get photos =>
+      _$this._photos ??= ListBuilder<RecoveryStepPhoto>();
+  set photos(ListBuilder<RecoveryStepPhoto>? photos) => _$this._photos = photos;
+
   RecoveryStepBuilder();
 
   RecoveryStepBuilder get _$this {
@@ -792,6 +1050,7 @@ class RecoveryStepBuilder
       _iconCodePoint = $v.iconCodePoint;
       _completed = $v.completed;
       _stepOrder = $v.stepOrder;
+      _photos = $v.photos.toBuilder();
       _$v = null;
     }
     return this;
@@ -811,41 +1070,62 @@ class RecoveryStepBuilder
   RecoveryStep build() => _build();
 
   _$RecoveryStep _build() {
-    final _$result =
-        _$v ??
-        _$RecoveryStep._(
-          id: BuiltValueNullFieldError.checkNotNull(id, r'RecoveryStep', 'id'),
-          recoveryPlanId: BuiltValueNullFieldError.checkNotNull(
-            recoveryPlanId,
-            r'RecoveryStep',
-            'recoveryPlanId',
-          ),
-          title: BuiltValueNullFieldError.checkNotNull(
-            title,
-            r'RecoveryStep',
-            'title',
-          ),
-          description: BuiltValueNullFieldError.checkNotNull(
-            description,
-            r'RecoveryStep',
-            'description',
-          ),
-          iconCodePoint: BuiltValueNullFieldError.checkNotNull(
-            iconCodePoint,
-            r'RecoveryStep',
-            'iconCodePoint',
-          ),
-          completed: BuiltValueNullFieldError.checkNotNull(
-            completed,
-            r'RecoveryStep',
-            'completed',
-          ),
-          stepOrder: BuiltValueNullFieldError.checkNotNull(
-            stepOrder,
-            r'RecoveryStep',
-            'stepOrder',
-          ),
+    _$RecoveryStep _$result;
+    try {
+      _$result =
+          _$v ??
+          _$RecoveryStep._(
+            id: BuiltValueNullFieldError.checkNotNull(
+              id,
+              r'RecoveryStep',
+              'id',
+            ),
+            recoveryPlanId: BuiltValueNullFieldError.checkNotNull(
+              recoveryPlanId,
+              r'RecoveryStep',
+              'recoveryPlanId',
+            ),
+            title: BuiltValueNullFieldError.checkNotNull(
+              title,
+              r'RecoveryStep',
+              'title',
+            ),
+            description: BuiltValueNullFieldError.checkNotNull(
+              description,
+              r'RecoveryStep',
+              'description',
+            ),
+            iconCodePoint: BuiltValueNullFieldError.checkNotNull(
+              iconCodePoint,
+              r'RecoveryStep',
+              'iconCodePoint',
+            ),
+            completed: BuiltValueNullFieldError.checkNotNull(
+              completed,
+              r'RecoveryStep',
+              'completed',
+            ),
+            stepOrder: BuiltValueNullFieldError.checkNotNull(
+              stepOrder,
+              r'RecoveryStep',
+              'stepOrder',
+            ),
+            photos: photos.build(),
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'photos';
+        photos.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+          r'RecoveryStep',
+          _$failedField,
+          e.toString(),
         );
+      }
+      rethrow;
+    }
     replace(_$result);
     return _$result;
   }

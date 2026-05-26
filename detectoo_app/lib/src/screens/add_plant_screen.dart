@@ -9,6 +9,7 @@ import '../data/repositories/recovery_repository.dart';
 import '../models/plant.dart';
 import '../models/plant_detection.dart';
 import '../providers/api_providers.dart';
+import '../services/notification_service.dart';
 
 enum _Phase { pick, detecting, confirm, creating }
 
@@ -111,26 +112,37 @@ class _AddPlantScreenState extends ConsumerState<AddPlantScreen> {
 
       final rp = detection.recoveryPlan;
       if (rp != null) {
-        await ref.read(recoveryRepositoryProvider).createRecoveryPlan(
-              plantId: plant.id,
-              condition: rp.condition,
-              severity: rp.severity,
-              summary: rp.summary,
-              estimatedRecovery: rp.estimatedRecovery,
-              doList: rp.doList,
-              dontList: rp.dontList,
-              signsOfImprovement: rp.signsOfImprovement,
-              steps: rp.steps
-                  .map(
-                    (s) => RecoveryStepDraft(
-                      title: s.title,
-                      description: s.description,
-                      iconCodePoint: 0xE15B,
-                      stepOrder: s.stepOrder,
-                    ),
-                  )
-                  .toList(),
-            );
+        final createdPlan =
+            await ref.read(recoveryRepositoryProvider).createRecoveryPlan(
+                  plantId: plant.id,
+                  condition: rp.condition,
+                  severity: rp.severity,
+                  summary: rp.summary,
+                  estimatedRecovery: rp.estimatedRecovery,
+                  doList: rp.doList,
+                  dontList: rp.dontList,
+                  signsOfImprovement: rp.signsOfImprovement,
+                  steps: rp.steps
+                      .map(
+                        (s) => RecoveryStepDraft(
+                          title: s.title,
+                          description: s.description,
+                          iconCodePoint: 0xE15B,
+                          stepOrder: s.stepOrder,
+                        ),
+                      )
+                      .toList(),
+                );
+
+        // Schedule a daily notification for each created step.
+        for (final step in createdPlan.steps) {
+          await NotificationService.scheduleStepReminder(
+            stepId: step.id,
+            plantName: plant.name,
+            stepTitle: step.title,
+          );
+        }
+
         ref.invalidate(recoveryPlansProvider);
       }
 

@@ -27,6 +27,17 @@ abstract class AuthRepository {
   /// between the login screen and the home screen.
   Future<User?> restoreSession();
 
+  /// Creates a new account and returns the authenticated user.
+  ///
+  /// On success the session token is persisted exactly as it would be
+  /// after a successful [login] call.
+  Future<User> signUp({
+    required String name,
+    required String username,
+    required String email,
+    required String password,
+  });
+
   /// Revokes the current session on the server and clears the stored
   /// token. Safe to call even when not logged in.
   Future<void> logout();

@@ -64,3 +64,16 @@ class RecoveryStep(Base):
     uuid: Mapped[uuid_pkg.UUID] = mapped_column(UUID(as_uuid=True), default_factory=uuid7, unique=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default_factory=lambda: datetime.now(UTC))
     updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=None)
+
+
+class RecoveryStepPhoto(Base):
+    """A progress photo attached to a recovery step."""
+
+    __tablename__ = "recovery_step_photo"
+
+    id: Mapped[int] = mapped_column(autoincrement=True, primary_key=True, init=False)
+    recovery_step_id: Mapped[int] = mapped_column(ForeignKey("recovery_step.id"), index=True)
+
+    image_url: Mapped[str] = mapped_column(String(500))
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default_factory=lambda: datetime.now(UTC))

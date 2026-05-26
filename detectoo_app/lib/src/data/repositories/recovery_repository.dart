@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import '../../models/recovery_plan.dart';
 
 /// Domain contract for recovery plans and their steps.
@@ -60,6 +62,13 @@ abstract class RecoveryRepository {
     bool? completed,
     int? stepOrder,
   });
+
+  /// Uploads a progress photo to a recovery step and returns the saved photo.
+  Future<RecoveryStepPhoto> uploadStepPhoto(
+    int planId,
+    int stepId,
+    File photo,
+  );
 }
 
 /// Minimal step payload used when creating a new [RecoveryPlan].

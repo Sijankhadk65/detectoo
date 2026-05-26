@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import '../../models/recovery_plan.dart';
 import '../api/api_client.dart';
 import '../api/api_exception.dart';
@@ -146,6 +148,26 @@ class RecoveryRepositoryImpl implements RecoveryRepository {
     await _client.patch('/recovery-plan/$planId/step/$stepId', body: body);
   }
 
+  @override
+  Future<RecoveryStepPhoto> uploadStepPhoto(
+    int planId,
+    int stepId,
+    File photo,
+  ) async {
+    final json = await _client.postMultipart(
+      '/recovery-plan/$planId/step/$stepId/photo',
+      file: photo,
+    ) as Map<String, dynamic>;
+
+    return RecoveryStepPhoto(
+      (b) => b
+        ..id = json['id'] as int
+        ..recoveryStepId = json['recovery_step_id'] as int
+        ..imageUrl = json['image_url'] as String
+        ..createdAt = _parseDate(json['created_at']) ?? DateTime.now(),
+    );
+  }
+
   RecoveryPlan _mapPlan(
     Map<String, dynamic> json, {
     required List<RecoveryStep> steps,
@@ -178,6 +200,14 @@ class RecoveryRepositoryImpl implements RecoveryRepository {
   }
 
   RecoveryStep _mapStep(Map<String, dynamic> json) {
+    final rawPhotos = json['photos'];
+    final photos = rawPhotos is List
+        ? rawPhotos
+            .whereType<Map<String, dynamic>>()
+            .map(_mapStepPhoto)
+            .toList(growable: false)
+        : const <RecoveryStepPhoto>[];
+
     return RecoveryStep(
       (b) => b
         ..id = json['id'] as int
@@ -186,7 +216,18 @@ class RecoveryRepositoryImpl implements RecoveryRepository {
         ..description = json['description'] as String
         ..iconCodePoint = json['icon_code_point'] as int
         ..completed = (json['completed'] as bool?) ?? false
-        ..stepOrder = (json['step_order'] as int?) ?? 0,
+        ..stepOrder = (json['step_order'] as int?) ?? 0
+        ..photos.replace(photos),
+    );
+  }
+
+  RecoveryStepPhoto _mapStepPhoto(Map<String, dynamic> json) {
+    return RecoveryStepPhoto(
+      (b) => b
+        ..id = json['id'] as int
+        ..recoveryStepId = json['recovery_step_id'] as int
+        ..imageUrl = json['image_url'] as String
+        ..createdAt = _parseDate(json['created_at']) ?? DateTime.now(),
     );
   }
 

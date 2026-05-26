@@ -8,6 +8,23 @@ from pydantic import BaseModel, ConfigDict, Field
 from ..core.schemas import PersistentDeletion, TimestampSchema, UUIDSchema
 
 
+# ---------------- recovery step photo ----------------
+class RecoveryStepPhotoRead(BaseModel):
+    """Schema for reading a recovery step progress photo."""
+
+    id: int
+    recovery_step_id: int
+    image_url: str
+    created_at: datetime
+
+
+class RecoveryStepPhotoCreateInternal(BaseModel):
+    """Internal schema for creating a recovery step photo."""
+
+    recovery_step_id: int
+    image_url: str
+
+
 # ---------------- recovery step ----------------
 class RecoveryStepBase(BaseModel):
     """Base schema for a single recovery step."""
@@ -42,6 +59,7 @@ class RecoveryStepRead(BaseModel):
     icon_code_point: int
     completed: bool
     step_order: int
+    photos: list[RecoveryStepPhotoRead] = []
 
 
 class RecoveryStepUpdate(BaseModel):
