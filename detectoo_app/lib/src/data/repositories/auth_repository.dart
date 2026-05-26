@@ -41,4 +41,10 @@ abstract class AuthRepository {
   /// Revokes the current session on the server and clears the stored
   /// token. Safe to call even when not logged in.
   Future<void> logout();
+
+  /// Returns `true` if [username] is not yet taken.
+  Future<bool> isUsernameAvailable(String username);
+
+  /// Returns `true` if [email] is not yet registered.
+  Future<bool> isEmailAvailable(String email);
 }

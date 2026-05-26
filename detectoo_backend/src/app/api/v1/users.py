@@ -17,6 +17,24 @@ from ...schemas.user import UserCreate, UserCreateInternal, UserRead, UserTierUp
 router = APIRouter(tags=["users"])
 
 
+@router.get("/check/username/{username}")
+async def check_username(
+    request: Request, username: str, db: Annotated[AsyncSession, Depends(async_get_db)]
+) -> dict[str, bool]:
+    """Returns whether the given username is available for registration."""
+    exists = await crud_users.exists(db=db, username=username)
+    return {"available": not exists}
+
+
+@router.get("/check/email/{email}")
+async def check_email(
+    request: Request, email: str, db: Annotated[AsyncSession, Depends(async_get_db)]
+) -> dict[str, bool]:
+    """Returns whether the given email address is available for registration."""
+    exists = await crud_users.exists(db=db, email=email)
+    return {"available": not exists}
+
+
 @router.post("/user", response_model=UserRead, status_code=201)
 async def write_user(
     request: Request, user: UserCreate, db: Annotated[AsyncSession, Depends(async_get_db)]

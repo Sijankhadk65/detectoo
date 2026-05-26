@@ -91,6 +91,18 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<bool> isUsernameAvailable(String username) async {
+    final json = await _client.get('/check/username/$username') as Map<String, dynamic>;
+    return json['available'] as bool;
+  }
+
+  @override
+  Future<bool> isEmailAvailable(String email) async {
+    final json = await _client.get('/check/email/$email') as Map<String, dynamic>;
+    return json['available'] as bool;
+  }
+
+  @override
   Future<void> logout() async {
     final token = await _tokenStorage.readAccessToken();
     if (token != null && token.isNotEmpty) {
