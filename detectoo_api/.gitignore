@@ -9,6 +9,8 @@ venv/
 env/
 .env
 src/.env
+src/.env.prod
+src/.env.dev
 bruno/environments/
 
 dist/
