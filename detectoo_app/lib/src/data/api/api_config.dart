@@ -1,15 +1,15 @@
 import 'dart:io' show Platform;
 
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, kReleaseMode;
 
 /// Environment configuration for the HTTP client.
 ///
-/// The base URL is resolved per platform so dev builds reach the
-/// local backend correctly:
-///  * Android emulator → `10.0.2.2` (host loopback)
+/// The base URL is resolved per platform and build mode:
+///  * Android debug → `dev.detectoo.tech`
+///  * Android release → `api.detectoo.tech`
 ///  * Web / iOS simulator / desktop → `localhost`
 ///
-/// Override for a physical device or staging build by passing
+/// Override for any build by passing
 /// `--dart-define=API_BASE_URL=https://api.example.com/api/v1`.
 class ApiConfig {
   ApiConfig._();
@@ -20,7 +20,11 @@ class ApiConfig {
     if (override.isNotEmpty) return override;
 
     if (kIsWeb) return 'http://localhost:8000/api/v1';
-    if (Platform.isAndroid) return 'https://dev.detectoo.tech/api/v1';
+    if (Platform.isAndroid) {
+      return kReleaseMode
+          ? 'https://api.detectoo.tech/api/v1'
+          : 'https://dev.detectoo.tech/api/v1';
+    }
     return 'http://localhost:8000/api/v1';
   }
 
