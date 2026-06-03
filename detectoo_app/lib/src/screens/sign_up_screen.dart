@@ -37,7 +37,21 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   }
 
   static bool _isValidEmail(String v) =>
-      RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(v);
+      RegExp(r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$')
+          .hasMatch(v);
+
+  static String? _passwordStrengthError(String v) {
+    final missing = <String>[];
+    if (v.length < 8) missing.add('at least 8 characters');
+    if (!RegExp(r'[A-Z]').hasMatch(v)) missing.add('an uppercase letter');
+    if (!RegExp(r'[a-z]').hasMatch(v)) missing.add('a lowercase letter');
+    if (!RegExp(r'[0-9]').hasMatch(v)) missing.add('a number');
+    if (!RegExp(r'[!@#\$%^&*(),.?":{}|<>_\-]').hasMatch(v)) {
+      missing.add('a special character');
+    }
+    if (missing.isEmpty) return null;
+    return 'Password must contain ${missing.join(', ')}.';
+  }
 
   Future<void> _handleSignUp() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
@@ -74,6 +88,15 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     final isLoading = ref.watch(authProvider).isLoading;
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
@@ -239,18 +262,36 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             },
           ),
           const SizedBox(height: 16),
-          _buildTextField(
-            colorScheme: colorScheme,
-            controller: _emailController,
-            label: 'Email',
-            hint: 'you@example.com',
-            icon: Icons.email_outlined,
-            keyboardType: TextInputType.emailAddress,
-            validator: (v) {
-              final s = (v ?? '').trim();
-              if (s.isEmpty) return 'Email is required.';
-              if (!_isValidEmail(s)) return 'Enter a valid email address.';
-              return null;
+          ValueListenableBuilder<TextEditingValue>(
+            valueListenable: _emailController,
+            builder: (context, value, _) {
+              final text = value.text.trim();
+              final valid = _isValidEmail(text);
+              return _buildTextField(
+                colorScheme: colorScheme,
+                controller: _emailController,
+                label: 'Email',
+                hint: 'you@example.com',
+                icon: Icons.email_outlined,
+                keyboardType: TextInputType.emailAddress,
+                suffixIcon: text.isNotEmpty
+                    ? Icon(
+                        valid
+                            ? Icons.check_circle_rounded
+                            : Icons.cancel_rounded,
+                        color: valid
+                            ? const Color(0xFF2E7D32)
+                            : colorScheme.error,
+                        size: 20,
+                      )
+                    : null,
+                validator: (v) {
+                  final s = (v ?? '').trim();
+                  if (s.isEmpty) return 'Email is required.';
+                  if (!_isValidEmail(s)) return 'Enter a valid email address.';
+                  return null;
+                },
+              );
             },
           ),
           const SizedBox(height: 16),
@@ -260,10 +301,12 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             label: 'Password',
             obscure: _obscurePassword,
             onToggle: () => setState(() => _obscurePassword = !_obscurePassword),
-            validator: (v) {
-              if ((v ?? '').length < 8) return 'Password must be at least 8 characters.';
-              return null;
-            },
+            validator: (v) => _passwordStrengthError(v ?? ''),
+          ),
+          ValueListenableBuilder<TextEditingValue>(
+            valueListenable: _passwordController,
+            builder: (context, value, _) =>
+                _buildPasswordStrengthIndicator(value.text, colorScheme),
           ),
           const SizedBox(height: 16),
           _buildPasswordField(
@@ -297,6 +340,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     required IconData icon,
     TextInputType keyboardType = TextInputType.text,
     bool autocorrect = true,
+    Widget? suffixIcon,
     String? Function(String?)? validator,
   }) {
     return TextFormField(
@@ -308,6 +352,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         labelText: label,
         hintText: hint,
         prefixIcon: Icon(icon, color: colorScheme.primary),
+        suffixIcon: suffixIcon,
         filled: true,
         fillColor: colorScheme.primaryContainer.withValues(alpha: 0.12),
         border: OutlineInputBorder(
@@ -374,6 +419,96 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     );
   }
 
+  Widget _buildPasswordStrengthIndicator(
+      String password, ColorScheme colorScheme) {
+    if (password.isEmpty) return const SizedBox.shrink();
+
+    final criteria = [
+      ('8+ characters', password.length >= 8),
+      ('Uppercase letter', RegExp(r'[A-Z]').hasMatch(password)),
+      ('Lowercase letter', RegExp(r'[a-z]').hasMatch(password)),
+      ('Number', RegExp(r'[0-9]').hasMatch(password)),
+      ('Special character',
+          RegExp(r'[!@#\$%^&*(),.?":{}|<>_\-]').hasMatch(password)),
+    ];
+
+    final metCount = criteria.where((c) => c.$2).length;
+
+    final (barColor, label) = switch (metCount) {
+      1 => (Colors.red, 'Weak'),
+      2 => (Colors.orange, 'Fair'),
+      3 => (Colors.amber, 'Good'),
+      4 => (Colors.lightGreen, 'Strong'),
+      _ => (const Color(0xFF2E7D32), 'Very Strong'),
+    };
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            ...List.generate(
+              5,
+              (i) => Expanded(
+                child: Container(
+                  margin: EdgeInsets.only(right: i < 4 ? 4 : 0),
+                  height: 4,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(2),
+                    color: i < metCount ? barColor : Colors.grey.shade200,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: barColor,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 12,
+          runSpacing: 6,
+          children: criteria
+              .map(
+                (c) => Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      c.$2
+                          ? Icons.check_circle_rounded
+                          : Icons.radio_button_unchecked_rounded,
+                      size: 14,
+                      color: c.$2
+                          ? const Color(0xFF2E7D32)
+                          : Colors.grey.shade400,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      c.$1,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: c.$2
+                            ? const Color(0xFF2E7D32)
+                            : Colors.grey.shade500,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+              .toList(),
+        ),
+      ],
+    );
+  }
+
   Widget _buildLoginLink(ColorScheme colorScheme) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -386,7 +521,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
           ),
         ),
         GestureDetector(
-          onTap: () => Navigator.pushReplacementNamed(context, Routes.login),
+          onTap: () => Navigator.pop(context),
           child: Text(
             'Log In',
             style: TextStyle(
