@@ -1,89 +1,89 @@
 import 'package:flutter/material.dart';
 
-/// A reusable card container with consistent border and styling.
+import '../theme/detectoo_colors.dart';
+
+/// The three card archetypes in the Detectoo design system.
+enum DetectooCardVariant {
+  /// Elevated white card: white bg, soft green shadow, no border.
+  /// The default — used for diagnosis summaries, reminders, list items.
+  white,
+
+  /// Soft cream card: a slightly darker cream, no shadow, no border.
+  /// Acts as a quiet container that nests other cards (e.g. Active Recovery).
+  cream,
+
+  /// Dark forest card: deep green bg, white text, green-500 progress fills.
+  /// Used for vitals/stat blocks (e.g. Current Vitals).
+  dark,
+}
+
+/// A reusable card container matching the Detectoo design system.
 ///
-/// Provides the standard Detectoo card appearance with rounded corners,
-/// optional elevation, optional gradient backgrounds, and an optional
-/// accent side strip for visual variety in a dual-palette design.
+/// Pick a [variant] to get the right surface treatment; all variants share
+/// the soft 20px corner radius. Prefer this over ad-hoc [Container]
+/// decorations so the three card looks stay consistent.
 class DetectooCard extends StatelessWidget {
-  /// The child widget to display inside the card.
+  /// The content of the card.
   final Widget child;
 
-  /// Optional custom border color. When set, draws a border.
-  final Color? borderColor;
+  /// Which card archetype to render. Defaults to [DetectooCardVariant.white].
+  final DetectooCardVariant variant;
 
-  /// Optional bottom margin. Defaults to 10.
-  final double bottomMargin;
-
-  /// Optional padding. Defaults to EdgeInsets.all(16).
+  /// Inner padding. Defaults to 20 on all sides.
   final EdgeInsetsGeometry padding;
 
-  /// Optional tap handler. When provided, the card becomes tappable.
+  /// Corner radius. Defaults to 20.
+  final double borderRadius;
+
+  /// Optional tap handler. When set, the card becomes tappable with a ripple.
   final VoidCallback? onTap;
 
-  /// Elevation level controlling shadow intensity. Defaults to 1.
-  final double elevation;
-
-  /// Optional gradient background. When set, overrides the solid
-  /// background color.
-  final Gradient? gradient;
-
-  /// Optional accent color for a thin left-side strip.
-  /// Adds a 4px wide colored strip on the left edge of the card.
-  final Color? accentColor;
+  /// Whether to clip the child to the rounded corners. Defaults to false;
+  /// set true when the child has edge-to-edge imagery.
+  final bool clip;
 
   const DetectooCard({
     super.key,
     required this.child,
-    this.borderColor,
-    this.bottomMargin = 10,
-    this.padding = const EdgeInsets.all(16),
+    this.variant = DetectooCardVariant.white,
+    this.padding = const EdgeInsets.all(20),
+    this.borderRadius = 20,
     this.onTap,
-    this.elevation = 1,
-    this.gradient,
-    this.accentColor,
+    this.clip = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final radius = BorderRadius.circular(borderRadius);
 
-    final cardContent = Container(
-      margin: EdgeInsets.only(bottom: bottomMargin, left: 10, right: 10),
-      decoration: BoxDecoration(
-        color: gradient == null ? colorScheme.surface : null,
-        gradient: gradient,
-        borderRadius: BorderRadius.circular(16),
-        border: borderColor != null ? Border.all(color: borderColor!) : null,
-        boxShadow: elevation > 0
-            ? [
-                BoxShadow(
-                  color: colorScheme.shadow.withValues(alpha: 0.06 * elevation),
-                  blurRadius: 5 * elevation,
-                  offset: Offset(0, 2 * elevation),
-                ),
-              ]
-            : null,
+    final (Color background, List<BoxShadow>? shadow) = switch (variant) {
+      DetectooCardVariant.white => (
+        DetectooColors.surfaceWhite,
+        DetectooShadows.card,
       ),
-      child: accentColor != null
-          ? ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Row(
-                children: [
-                  Container(width: 4, color: accentColor),
-                  Expanded(
-                    child: Padding(padding: padding, child: child),
-                  ),
-                ],
-              ),
-            )
-          : Padding(padding: padding, child: child),
+      DetectooCardVariant.cream => (DetectooColors.canvasCreamDim, null),
+      DetectooCardVariant.dark => (DetectooColors.surfaceDark, null),
+    };
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: radius,
+        boxShadow: shadow,
+      ),
+      child: Material(
+        type: MaterialType.transparency,
+        borderRadius: radius,
+        clipBehavior: clip ? Clip.antiAlias : Clip.none,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: radius,
+          // Disable the splash/highlight when not interactive.
+          splashColor: onTap == null ? Colors.transparent : null,
+          highlightColor: onTap == null ? Colors.transparent : null,
+          child: Padding(padding: padding, child: child),
+        ),
+      ),
     );
-
-    if (onTap != null) {
-      return GestureDetector(onTap: onTap, child: cardContent);
-    }
-
-    return cardContent;
   }
 }

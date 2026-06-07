@@ -1,51 +1,91 @@
 import 'package:flutter/material.dart';
 
-/// A pill-shaped badge displaying a status label.
+import '../theme/detectoo_colors.dart';
+import '../theme/detectoo_text_styles.dart';
+
+/// A pill-shaped status badge.
 ///
-/// Used to show health statuses, recovery progress labels,
-/// severity indicators, and other short categorical labels.
-/// Features a tinted background with a subtle matching border
-/// for better definition against card backgrounds.
+/// Two looks from the design system's `.ds-chip`:
+/// - default: a quiet green-100 fill with green-700 label, for health
+///   statuses and categorical tags.
+/// - [accent]: a solid terracotta fill with white, UPPERCASE, tracked text,
+///   for attention badges like "2 PLANS" or "AI DIAGNOSIS RESULT".
+///
+/// Pass a [color] to tint the default (quiet) variant for semantic states.
 class StatusChip extends StatelessWidget {
-  /// The label text to display.
+  /// The label text.
   final String label;
 
-  /// The accent color used for background, border, and text.
-  final Color color;
+  /// Use the solid terracotta accent treatment (uppercase, tracked).
+  final bool accent;
 
-  /// Whether to show a stronger border around the chip.
-  /// When false, a subtle border is still drawn for definition.
-  final bool showBorder;
+  /// Optional leading icon.
+  final IconData? icon;
 
-  /// Optional background alpha. Defaults to 0.1.
-  final double backgroundAlpha;
+  /// Optional tint for the quiet variant. Defaults to brand green.
+  final Color? color;
 
   const StatusChip({
     super.key,
     required this.label,
-    required this.color,
-    this.showBorder = false,
-    this.backgroundAlpha = 0.1,
+    this.accent = false,
+    this.icon,
+    this.color,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (accent) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          color: color ?? DetectooColors.terracotta,
+          borderRadius: BorderRadius.circular(DetectooRadii.pill),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 13, color: Colors.white),
+              const SizedBox(width: 5),
+            ],
+            Text(
+              label.toUpperCase(),
+              style: DetectooText.eyebrow.copyWith(color: Colors.white),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final tint = color ?? DetectooColors.green600;
+    final isGreen = color == null;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: backgroundAlpha),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: color.withValues(alpha: showBorder ? 0.4 : 0.2),
-        ),
+        color: isGreen ? DetectooColors.green100 : tint.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(DetectooRadii.pill),
       ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: color,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(
+              icon,
+              size: 14,
+              color: isGreen ? DetectooColors.green700 : tint,
+            ),
+            const SizedBox(width: 6),
+          ],
+          Text(
+            label,
+            style: DetectooText.small.copyWith(
+              color: isGreen ? DetectooColors.green700 : tint,
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+            ),
+          ),
+        ],
       ),
     );
   }

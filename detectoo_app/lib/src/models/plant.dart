@@ -3,6 +3,8 @@ import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 import 'package:flutter/material.dart' hide Builder;
 
+import '../theme/detectoo_colors.dart';
+
 part 'plant.g.dart';
 
 /// Represents a plant owned by the user.
@@ -36,8 +38,7 @@ abstract class Plant implements Built<Plant, PlantBuilder> {
 
   /// Returns the [IconData] for this plant's icon.
   @BuiltValueField(serialize: false)
-  IconData get iconData =>
-      IconData(iconCodePoint, fontFamily: 'MaterialIcons');
+  IconData get iconData => IconData(iconCodePoint, fontFamily: 'MaterialIcons');
 
   /// Human-readable "time ago" label for [lastWatered].
   ///
@@ -117,12 +118,12 @@ extension PlantHealthStatusUI on PlantHealthStatus {
   Color get color {
     switch (this) {
       case PlantHealthStatus.healthy:
-        return const Color(0xFF2E7D32);
+        return DetectooColors.green500;
       case PlantHealthStatus.needsAttention:
-        return const Color(0xFFE65100);
+        return DetectooColors.terracotta;
       case PlantHealthStatus.recovering:
-        return const Color(0xFF1565C0);
+        return DetectooColors.green600;
     }
-    return const Color(0xFF616161);
+    return DetectooColors.textMuted;
   }
 }

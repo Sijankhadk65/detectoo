@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 
-/// A reusable section title row with an icon in a tinted pill
-/// and heading text.
+import '../theme/detectoo_text_styles.dart';
+import 'icon_badge.dart';
+
+/// A section heading row: a tinted [IconBadge] followed by an H3 title.
 ///
-/// Used across screens to introduce content sections with a
-/// consistent Georgia font style and a colored icon badge for
-/// visual weight in the dual-palette design.
+/// Used to introduce content sections with consistent Plus Jakarta Sans
+/// styling and a colored icon tile for visual weight.
 class SectionTitle extends StatelessWidget {
-  /// The title text to display.
+  /// The title text.
   final String title;
 
   /// The icon displayed before the title.
   final IconData icon;
 
-  /// Optional custom color for the icon and its background pill.
+  /// Optional custom color for the icon and its tile.
   final Color? iconColor;
 
   const SectionTitle({
@@ -25,29 +26,11 @@ class SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final effectiveColor = iconColor ?? colorScheme.primary;
-
     return Row(
       children: [
-        Container(
-          padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(
-            color: effectiveColor.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, size: 18, color: effectiveColor),
-        ),
+        IconBadge(icon: icon, iconColor: iconColor, iconSize: 18, padding: 8),
         const SizedBox(width: 10),
-        Text(
-          title,
-          style: TextStyle(
-            fontFamily: 'Georgia',
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: colorScheme.onSurface,
-          ),
-        ),
+        Expanded(child: Text(title, style: DetectooText.h3)),
       ],
     );
   }

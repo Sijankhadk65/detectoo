@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user.dart';
 import '../providers/auth_provider.dart';
 import '../routes.dart';
+import '../theme/detectoo_colors.dart';
+import '../theme/detectoo_text_styles.dart';
 import '../widgets/detectoo_button.dart';
 import '../widgets/detectoo_card.dart';
 import '../widgets/icon_badge.dart';
@@ -32,8 +34,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     return Scaffold(
       body: SafeArea(
+        bottom: false,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -70,25 +73,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 32),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            colorScheme.primary,
-            const Color(0xFF00897B),
-          ],
+          colors: [DetectooColors.surfaceDark, DetectooColors.surfaceDarkDeep],
         ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.primary.withValues(alpha: 0.3),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: DetectooShadows.cardMd,
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -100,7 +94,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 height: 100,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.07),
+                  color: DetectooColors.green500.withValues(alpha: 0.10),
                 ),
               ),
             ),
@@ -112,7 +106,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 height: 120,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.05),
+                  color: DetectooColors.green300.withValues(alpha: 0.08),
                 ),
               ),
             ),
@@ -122,10 +116,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   width: 88,
                   height: 88,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color: Colors.white.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.3),
+                      color: DetectooColors.green300.withValues(alpha: 0.4),
                       width: 2,
                     ),
                   ),
@@ -137,20 +131,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
                 const SizedBox(height: 14),
                 Text(
-                  user?.name ?? 'Plant Lover',
-                  style: const TextStyle(
-                    fontFamily: 'Georgia',
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                  user?.name ?? 'Plant Parent',
+                  style: DetectooText.h2.copyWith(color: Colors.white),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   user?.email ?? '',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white.withValues(alpha: 0.75),
+                  style: DetectooText.small.copyWith(
+                    color: DetectooColors.textOnDarkMuted,
                   ),
                 ),
                 if (user?.isEmailVerified != null) ...[
@@ -160,16 +148,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 const SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 6),
+                    horizontal: 14,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.white.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
                     'Member since ${user?.memberSince ?? ''}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
+                    style: DetectooText.small.copyWith(
                       color: Colors.white.withValues(alpha: 0.9),
                     ),
                   ),
@@ -182,10 +170,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  /// Builds the email-verification status pill shown in the header.
+  /// Builds the email-verification status pill shown in the dark header.
   ///
-  /// Green and static when verified; amber and tappable (to resend the
-  /// verification email) when not.
+  /// Static when verified; tappable (to resend the verification email) when not.
   Widget _buildVerificationPill(bool verified) {
     final icon = verified
         ? Icons.verified_rounded
@@ -217,10 +204,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     if (verified) return pill;
 
-    return GestureDetector(
-      onTap: _resendVerification,
-      child: pill,
-    );
+    return GestureDetector(onTap: _resendVerification, child: pill);
   }
 
   /// Resends the verification email and surfaces the outcome via a snackbar.
@@ -247,18 +231,31 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Row(
       children: [
         Expanded(
-            child: _buildStatCard(
-                '7', 'Total Plants', Icons.yard_rounded, colorScheme)),
+          child: _buildStatCard(
+            '7',
+            'Total Plants',
+            Icons.spa_rounded,
+            DetectooColors.green600,
+          ),
+        ),
         const SizedBox(width: 10),
         Expanded(
-            child: _buildStatCard(
-                '4', 'Healthy', Icons.favorite_rounded, colorScheme,
-                iconColor: colorScheme.secondary)),
+          child: _buildStatCard(
+            '4',
+            'Healthy',
+            Icons.favorite_rounded,
+            DetectooColors.green500,
+          ),
+        ),
         const SizedBox(width: 10),
         Expanded(
-            child: _buildStatCard(
-                '3', 'Recovering', Icons.healing_rounded, colorScheme,
-                iconColor: const Color(0xFFFF6D00))),
+          child: _buildStatCard(
+            '3',
+            'Recovering',
+            Icons.healing_rounded,
+            DetectooColors.terracotta,
+          ),
+        ),
       ],
     );
   }
@@ -268,32 +265,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     String value,
     String label,
     IconData icon,
-    ColorScheme colorScheme, {
-    Color? iconColor,
-  }) {
+    Color iconColor,
+  ) {
     return DetectooCard(
-      bottomMargin: 0,
       padding: const EdgeInsets.symmetric(vertical: 18),
       child: Column(
         children: [
-          Icon(icon, size: 22, color: iconColor ?? colorScheme.primary),
+          Icon(icon, size: 22, color: iconColor),
           const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: colorScheme.onSurface,
-            ),
-          ),
+          Text(value, style: DetectooText.h2),
           const SizedBox(height: 2),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              color: colorScheme.onSurface.withValues(alpha: 0.5),
-            ),
-          ),
+          Text(label, style: DetectooText.small),
         ],
       ),
     );
@@ -302,7 +284,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   /// Builds the preferences section with toggle switches.
   Widget _buildPreferences(ColorScheme colorScheme) {
     return DetectooCard(
-      bottomMargin: 0,
       padding: EdgeInsets.zero,
       child: Column(
         children: [
@@ -314,10 +295,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             (value) => setState(() => _notificationsEnabled = value),
             colorScheme,
           ),
-          Divider(
-            height: 1,
-            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-          ),
+          const Divider(height: 1, color: DetectooColors.borderSoft),
           _buildToggleTile(
             'Water Reminders',
             'Daily reminders to water your plants',
@@ -350,30 +328,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
+                Text(title, style: DetectooText.bodyStrong),
                 const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: colorScheme.onSurface.withValues(alpha: 0.5),
-                  ),
-                ),
+                Text(subtitle, style: DetectooText.small),
               ],
             ),
           ),
           Switch(
             value: value,
             onChanged: onChanged,
-            activeThumbColor: colorScheme.secondary,
-            activeTrackColor: colorScheme.secondaryContainer,
+            activeThumbColor: Colors.white,
+            activeTrackColor: DetectooColors.green600,
           ),
         ],
       ),
@@ -383,38 +348,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   /// Builds the account options list.
   Widget _buildAccountOptions(BuildContext context, ColorScheme colorScheme) {
     return DetectooCard(
-      bottomMargin: 0,
       padding: EdgeInsets.zero,
       child: Column(
         children: [
           _buildOptionTile(
             'Edit Profile',
             Icons.edit_outlined,
-            colorScheme,
             onTap: () {
               // TODO: Navigate to edit profile.
             },
           ),
-          Divider(
-            height: 1,
-            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-          ),
+          const Divider(height: 1, color: DetectooColors.borderSoft),
           _buildOptionTile(
             'Change Password',
             Icons.lock_outline_rounded,
-            colorScheme,
             onTap: () {
               // TODO: Navigate to change password.
             },
           ),
-          Divider(
-            height: 1,
-            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-          ),
+          const Divider(height: 1, color: DetectooColors.borderSoft),
           _buildOptionTile(
             'Help & Support',
             Icons.help_outline_rounded,
-            colorScheme,
             onTap: () {
               // TODO: Navigate to help screen.
             },
@@ -427,8 +382,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   /// Builds a single tappable option tile.
   Widget _buildOptionTile(
     String title,
-    IconData icon,
-    ColorScheme colorScheme, {
+    IconData icon, {
     required VoidCallback onTap,
   }) {
     return GestureDetector(
@@ -440,19 +394,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           children: [
             IconBadge(icon: icon),
             const SizedBox(width: 14),
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurface,
-                ),
-              ),
-            ),
-            Icon(
+            Expanded(child: Text(title, style: DetectooText.bodyStrong)),
+            const Icon(
               Icons.chevron_right_rounded,
-              color: colorScheme.onSurface.withValues(alpha: 0.3),
+              color: DetectooColors.textFaint,
             ),
           ],
         ),
@@ -462,11 +407,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   /// Builds the logout button.
   Widget _buildLogoutButton(BuildContext context, ColorScheme colorScheme) {
-    return DetectooButton(
+    return DetectooButton.ghost(
       label: 'Log Out',
       icon: Icons.logout_rounded,
-      outlined: true,
-      color: const Color(0xFFC62828),
+      color: DetectooColors.terracotta,
       onPressed: () async {
         await ref.read(authProvider.notifier).signOut();
         if (!context.mounted) return;

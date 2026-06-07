@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/plant.dart';
 import '../providers/api_providers.dart';
 import '../routes.dart';
+import '../theme/detectoo_colors.dart';
+import '../theme/detectoo_text_styles.dart';
 import '../widgets/detectoo_button.dart';
 import '../widgets/detectoo_card.dart';
 import '../widgets/icon_badge.dart';
@@ -144,17 +146,17 @@ class _PlantDetailScreenState extends ConsumerState<PlantDetailScreen> {
 
   /// Builds the back button bar with a delete icon on the right.
   Widget _buildTopBar(
-      BuildContext context, Plant plant, ColorScheme colorScheme) {
+    BuildContext context,
+    Plant plant,
+    ColorScheme colorScheme,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
         children: [
           IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: Icon(
-              Icons.arrow_back_rounded,
-              color: colorScheme.onSurface,
-            ),
+            icon: Icon(Icons.arrow_back_rounded, color: colorScheme.onSurface),
           ),
           const Spacer(),
           if (_isDeleting)
@@ -245,15 +247,7 @@ class _PlantDetailScreenState extends ConsumerState<PlantDetailScreen> {
           child: Icon(plant.iconData, size: 40, color: colorScheme.primary),
         ),
         const SizedBox(height: 16),
-        Text(
-          plant.name,
-          style: TextStyle(
-            fontFamily: 'Georgia',
-            fontSize: 26,
-            fontWeight: FontWeight.bold,
-            color: colorScheme.onSurface,
-          ),
-        ),
+        Text(plant.name, style: DetectooText.h1),
         const SizedBox(height: 8),
         _buildStatusPill(plant, onDark: false),
       ],
@@ -264,15 +258,7 @@ class _PlantDetailScreenState extends ConsumerState<PlantDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          plant.name,
-          style: const TextStyle(
-            fontFamily: 'Georgia',
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
+        Text(plant.name, style: DetectooText.h2.copyWith(color: Colors.white)),
         const SizedBox(height: 6),
         _buildStatusPill(plant, onDark: true),
       ],
@@ -285,19 +271,13 @@ class _PlantDetailScreenState extends ConsumerState<PlantDetailScreen> {
       decoration: BoxDecoration(
         color: onDark
             ? Colors.white.withValues(alpha: 0.2)
-            : plant.healthStatus.color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: onDark
-              ? Colors.white.withValues(alpha: 0.4)
-              : plant.healthStatus.color.withValues(alpha: 0.3),
-        ),
+            : plant.healthStatus.color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         plant.healthStatus.label,
-        style: TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
+        style: DetectooText.small.copyWith(
+          fontWeight: FontWeight.w700,
           color: onDark ? Colors.white : plant.healthStatus.color,
         ),
       ),
@@ -323,7 +303,7 @@ class _PlantDetailScreenState extends ConsumerState<PlantDetailScreen> {
             _sunlightLabel(plant.sunlight),
             Icons.wb_sunny_outlined,
             colorScheme,
-            iconColor: const Color(0xFFFF8F00),
+            iconColor: DetectooColors.warning,
           ),
         ),
         const SizedBox(width: 10),
@@ -333,7 +313,7 @@ class _PlantDetailScreenState extends ConsumerState<PlantDetailScreen> {
             _humidityLabel(plant.humidity),
             Icons.opacity_outlined,
             colorScheme,
-            iconColor: const Color(0xFF0277BD),
+            iconColor: DetectooColors.green500,
           ),
         ),
       ],
@@ -348,35 +328,19 @@ class _PlantDetailScreenState extends ConsumerState<PlantDetailScreen> {
     ColorScheme colorScheme, {
     Color? iconColor,
   }) {
-    return Container(
+    return DetectooCard(
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-        ),
-      ),
       child: Column(
         children: [
-          Icon(icon, size: 22, color: iconColor ?? colorScheme.primary),
+          Icon(icon, size: 22, color: iconColor ?? DetectooColors.green600),
           const SizedBox(height: 8),
           Text(
             value,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: colorScheme.onSurface,
-            ),
+            style: DetectooText.bodyStrong.copyWith(fontSize: 14),
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 2),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              color: colorScheme.onSurface.withValues(alpha: 0.5),
-            ),
-          ),
+          Text(label, style: DetectooText.small.copyWith(fontSize: 11)),
         ],
       ),
     );
@@ -386,52 +350,47 @@ class _PlantDetailScreenState extends ConsumerState<PlantDetailScreen> {
   Widget _buildCareLog(ColorScheme colorScheme) {
     final logs = [
       _CareLogEntry(
-          action: 'Watered',
-          date: 'Today, 8:00 AM',
-          icon: Icons.water_drop_outlined),
+        action: 'Watered',
+        date: 'Today, 8:00 AM',
+        icon: Icons.water_drop_outlined,
+      ),
       _CareLogEntry(
-          action: 'Fertilized',
-          date: 'Apr 5, 2026',
-          icon: Icons.science_outlined),
+        action: 'Fertilized',
+        date: 'Apr 5, 2026',
+        icon: Icons.science_outlined,
+      ),
       _CareLogEntry(
-          action: 'Repotted',
-          date: 'Mar 20, 2026',
-          icon: Icons.swap_horiz_rounded),
+        action: 'Repotted',
+        date: 'Mar 20, 2026',
+        icon: Icons.swap_horiz_rounded,
+      ),
       _CareLogEntry(
-          action: 'Pruned',
-          date: 'Mar 10, 2026',
-          icon: Icons.content_cut_rounded),
+        action: 'Pruned',
+        date: 'Mar 10, 2026',
+        icon: Icons.content_cut_rounded,
+      ),
     ];
 
     return Column(
       children: logs
-          .map((log) => DetectooCard(
-                elevation: 0.5,
+          .map(
+            (log) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: DetectooCard(
                 padding: const EdgeInsets.all(14),
                 child: Row(
                   children: [
                     IconBadge(icon: log.icon),
                     const SizedBox(width: 14),
                     Expanded(
-                      child: Text(
-                        log.action,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
+                      child: Text(log.action, style: DetectooText.bodyStrong),
                     ),
-                    Text(
-                      log.date,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: colorScheme.onSurface.withValues(alpha: 0.5),
-                      ),
-                    ),
+                    Text(log.date, style: DetectooText.small),
                   ],
                 ),
-              ))
+              ),
+            ),
+          )
           .toList(),
     );
   }
@@ -444,38 +403,35 @@ class _PlantDetailScreenState extends ConsumerState<PlantDetailScreen> {
       'Mist leaves occasionally to maintain humidity.',
     ];
 
-    return Container(
+    return DetectooCard(
+      variant: DetectooCardVariant.cream,
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.primaryContainer.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(14),
-      ),
       child: Column(
         children: tips
-            .map((tip) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(
-                        Icons.eco_outlined,
-                        size: 16,
-                        color: colorScheme.primary,
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          tip,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color:
-                                colorScheme.onSurface.withValues(alpha: 0.7),
-                          ),
+            .map(
+              (tip) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(
+                      Icons.eco_outlined,
+                      size: 16,
+                      color: DetectooColors.green600,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        tip,
+                        style: DetectooText.small.copyWith(
+                          color: DetectooColors.textBody,
                         ),
                       ),
-                    ],
-                  ),
-                ))
+                    ),
+                  ],
+                ),
+              ),
+            )
             .toList(),
       ),
     );
@@ -490,7 +446,7 @@ class _PlantDetailScreenState extends ConsumerState<PlantDetailScreen> {
     return DetectooButton(
       label: 'View Recovery Plan',
       icon: Icons.healing_rounded,
-      color: colorScheme.secondary,
+      variant: DetectooButtonVariant.accent,
       onPressed: () {
         Navigator.pushNamed(context, Routes.recovery, arguments: plant);
       },
@@ -503,15 +459,12 @@ class _PlantDetailScreenState extends ConsumerState<PlantDetailScreen> {
       onPressed: _isDeleting ? null : () => _confirmDelete(plant),
       style: OutlinedButton.styleFrom(
         minimumSize: const Size.fromHeight(48),
-        side: BorderSide(color: colorScheme.error.withValues(alpha: 0.5)),
-        foregroundColor: colorScheme.error,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        side: const BorderSide(color: DetectooColors.terracottaSoft),
+        foregroundColor: DetectooColors.terracotta,
+        shape: const StadiumBorder(),
       ),
       icon: const Icon(Icons.delete_outline_rounded),
-      label: const Text(
-        'Remove Plant',
-        style: TextStyle(fontWeight: FontWeight.w600),
-      ),
+      label: const Text('Remove Plant'),
     );
   }
 }

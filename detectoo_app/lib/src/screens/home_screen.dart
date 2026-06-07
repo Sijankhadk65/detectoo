@@ -8,8 +8,12 @@ import '../models/reminder.dart';
 import '../models/task.dart';
 import '../providers/api_providers.dart';
 import '../providers/auth_provider.dart';
+import '../theme/detectoo_colors.dart';
+import '../theme/detectoo_text_styles.dart';
 import '../widgets/detectoo_card.dart';
+import '../widgets/eyebrow_label.dart';
 import '../widgets/section_title.dart';
+import '../widgets/status_chip.dart';
 import '../widgets/verification_banner.dart';
 
 /// Dashboard of the Detectoo application.
@@ -37,29 +41,25 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       body: SafeArea(
+        bottom: false,
         child: SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 120),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const VerificationBanner(),
-              _buildTopBar(
-                context,
-                ref,
-                colorScheme,
-                pendingCount,
-                reminderCount,
-              ),
-              const SizedBox(height: 20),
-              _buildGreeting(colorScheme, user?.name),
-              const SizedBox(height: 24),
-              Container(
-                margin: const EdgeInsets.only(left: 20, right: 0),
-                child: const SectionTitle(
-                  title: 'Recovery Status',
+              _buildTopBar(context, pendingCount, reminderCount),
+              const SizedBox(height: 16),
+              _buildGreeting(user?.name),
+              const SizedBox(height: 28),
+              const Padding(
+                padding: EdgeInsets.only(left: 24, right: 24),
+                child: SectionTitle(
+                  title: 'Active Recovery',
                   icon: Icons.healing_rounded,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               _buildRecoveryStatus(context, ref, colorScheme),
             ],
           ),
@@ -68,34 +68,61 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  /// Builds the top bar with notification and to-do icons.
+  /// Builds the top bar with the wordmark and notification / to-do icons.
   Widget _buildTopBar(
     BuildContext context,
-    WidgetRef ref,
-    ColorScheme colorScheme,
     int pendingCount,
     int reminderCount,
   ) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 0, left: 0, right: 20, top: 20),
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          // Reminders icon
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: DetectooColors.green600,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(
+              Icons.search_rounded,
+              size: 22,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: 'detect',
+                  style: DetectooText.h3.copyWith(
+                    color: DetectooColors.green900,
+                  ),
+                ),
+                TextSpan(
+                  text: 'oo',
+                  style: DetectooText.h3.copyWith(
+                    color: DetectooColors.green500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Spacer(),
           _buildIconWithBadge(
             icon: Icons.notifications_outlined,
             count: reminderCount,
-            color: colorScheme.primary,
-            backgroundColor: colorScheme.primary.withValues(alpha: 0.08),
+            color: DetectooColors.green700,
             onTap: () => _showRemindersSheet(context, colorScheme),
           ),
           const SizedBox(width: 12),
-          // To-do icon
           _buildIconWithBadge(
             icon: Icons.checklist_rounded,
             count: pendingCount,
-            color: colorScheme.secondary,
-            backgroundColor: colorScheme.secondary.withValues(alpha: 0.08),
+            color: DetectooColors.terracotta,
             onTap: () => _showToDoSheet(context, colorScheme),
           ),
         ],
@@ -108,7 +135,6 @@ class HomeScreen extends ConsumerWidget {
     required IconData icon,
     required int count,
     required Color color,
-    required Color backgroundColor,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
@@ -120,7 +146,7 @@ class HomeScreen extends ConsumerWidget {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: backgroundColor,
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, size: 22, color: color),
@@ -135,13 +161,6 @@ class HomeScreen extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: color,
                   borderRadius: BorderRadius.circular(10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: color.withValues(alpha: 0.3),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
                 ),
                 child: Text(
                   '$count',
@@ -238,10 +257,7 @@ class HomeScreen extends ConsumerWidget {
       itemBuilder: (context, index) {
         final reminder = reminders[index];
         return Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 12,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           child: Row(
             children: [
               Container(
@@ -367,39 +383,28 @@ class HomeScreen extends ConsumerWidget {
   }
 
   /// Builds the personalized greeting.
-  Widget _buildGreeting(ColorScheme colorScheme, String? userName) {
-    final name = userName ?? 'Plant Lover';
+  Widget _buildGreeting(String? userName) {
+    final name = userName ?? 'Plant Parent';
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 0, left: 20, right: 0, top: 0),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const EyebrowLabel('BOTANICAL DASHBOARD'),
+          const SizedBox(height: 12),
           Text(
-            'Good Morning,',
-            style: TextStyle(
-              fontFamily: 'Georgia',
-              fontSize: 28,
-              fontWeight: FontWeight.w600,
-              color: colorScheme.primary,
+            'Hello,\n$name!',
+            style: DetectooText.h1.copyWith(
+              color: DetectooColors.green700,
+              height: 1.1,
             ),
           ),
+          const SizedBox(height: 12),
           Text(
-            '$name!',
-            style: TextStyle(
-              fontFamily: 'Georgia',
-              fontSize: 36,
-              fontWeight: FontWeight.bold,
-              color: colorScheme.primary,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            "Here's what's happening with your plants today.",
-            style: TextStyle(
-              fontSize: 14,
-              color: colorScheme.onSurface.withValues(alpha: 0.45),
-            ),
+            'Your digital curator has analysed the environment. '
+            'Here is what needs your attention today.',
+            style: DetectooText.body.copyWith(color: DetectooColors.textMuted),
           ),
         ],
       ),
@@ -417,15 +422,11 @@ class HomeScreen extends ConsumerWidget {
 
     return SizedBox(
       width: MediaQuery.of(context).size.width,
-      height: 370,
+      height: 340,
       child: plansAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => _buildRecoveryError(
-          context,
-          ref,
-          colorScheme,
-          error,
-        ),
+        error: (error, _) =>
+            _buildRecoveryError(context, ref, colorScheme, error),
         data: (plans) {
           if (plans.isEmpty) {
             return _buildRecoveryEmpty(colorScheme);
@@ -436,9 +437,9 @@ class HomeScreen extends ConsumerWidget {
 
           return ListView.separated(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.fromLTRB(24, 4, 24, 8),
             itemCount: plans.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 0),
+            separatorBuilder: (_, _) => const SizedBox(width: 16),
             itemBuilder: (context, index) {
               final plan = plans[index];
               final plant = plantsById[plan.plantId];
@@ -460,35 +461,25 @@ class HomeScreen extends ConsumerWidget {
   }
 
   Widget _buildRecoveryEmpty(ColorScheme colorScheme) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: DetectooCard(
+        variant: DetectooCardVariant.cream,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               Icons.spa_rounded,
               size: 44,
-              color: colorScheme.primary.withValues(alpha: 0.4),
+              color: DetectooColors.green600.withValues(alpha: 0.4),
             ),
             const SizedBox(height: 10),
-            Text(
-              'No active recovery plans',
-              style: TextStyle(
-                fontFamily: 'Georgia',
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: colorScheme.onSurface,
-              ),
-            ),
+            Text('No active recovery plans.', style: DetectooText.h3),
             const SizedBox(height: 6),
             Text(
-              'All your plants are healthy. Nice work.',
+              'All your specimens are thriving. Nice work.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13,
-                color: colorScheme.onSurface.withValues(alpha: 0.55),
-              ),
+              style: DetectooText.small,
             ),
           ],
         ),
@@ -511,19 +502,16 @@ class HomeScreen extends ConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
+            const Icon(
               Icons.cloud_off_rounded,
               size: 40,
-              color: colorScheme.onSurface.withValues(alpha: 0.35),
+              color: DetectooColors.textFaint,
             ),
             const SizedBox(height: 8),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13,
-                color: colorScheme.onSurface.withValues(alpha: 0.7),
-              ),
+              style: DetectooText.small,
             ),
             const SizedBox(height: 12),
             FilledButton.tonalIcon(
@@ -551,68 +539,30 @@ class HomeScreen extends ConsumerWidget {
     final status = _statusForProgress(plan.progress);
 
     return DetectooCard(
-      elevation: 2,
+      clip: true,
       padding: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Image with status badge overlay
-          ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(16),
-              topRight: Radius.circular(16),
-            ),
-            child: Stack(
-              children: [
-                Image.asset(
-                  imagePath,
-                  width: double.infinity,
-                  height: 170,
-                  fit: BoxFit.cover,
+          Stack(
+            children: [
+              Image.asset(
+                imagePath,
+                width: double.infinity,
+                height: 160,
+                fit: BoxFit.cover,
+              ),
+              Positioned(
+                top: 12,
+                left: 12,
+                child: StatusChip(
+                  label: status,
+                  accent: true,
+                  icon: Icons.healing_rounded,
                 ),
-                Positioned(
-                  top: 12,
-                  left: 12,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: colorScheme.secondary,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.2),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.healing_rounded,
-                          size: 14,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(width: 5),
-                        Text(
-                          status.toUpperCase(),
-                          style: const TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
           // Plant name and condition
           Padding(
@@ -620,21 +570,48 @@ class HomeScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  plantName,
-                  style: TextStyle(
-                    fontFamily: 'Georgia',
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
+                Text(plantName, style: DetectooText.h3),
                 const SizedBox(height: 2),
                 Text(
                   plan.condition,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: colorScheme.onSurface.withValues(alpha: 0.5),
+                  style: DetectooText.small,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          // Progress bar
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Day ${(plan.progress * 14).round()} of recovery',
+                      style: DetectooText.small,
+                    ),
+                    Text(
+                      '$percentage%',
+                      style: DetectooText.bodyStrong.copyWith(
+                        color: DetectooColors.green600,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(999),
+                  child: LinearProgressIndicator(
+                    value: plan.progress.clamp(0.0, 1.0),
+                    minHeight: 6,
+                    backgroundColor: DetectooColors.green100,
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      DetectooColors.green500,
+                    ),
                   ),
                 ),
               ],
@@ -646,71 +623,23 @@ class HomeScreen extends ConsumerWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'PROGRESS',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: colorScheme.onSurface.withValues(alpha: 0.4),
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '$percentage%',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.primary,
-                        ),
-                      ),
-                    ],
+                  child: _statColumn(
+                    'SEVERITY',
+                    plan.severity,
+                    DetectooColors.terracotta,
                   ),
                 ),
                 Container(
                   width: 1,
-                  height: 36,
-                  color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+                  height: 32,
+                  color: DetectooColors.borderSoft,
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'SEVERITY',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: colorScheme.onSurface.withValues(alpha: 0.4),
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        plan.severity,
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.secondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: colorScheme.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    Icons.eco_rounded,
-                    size: 20,
-                    color: colorScheme.primary,
+                  child: _statColumn(
+                    'CONDITION',
+                    plan.condition,
+                    DetectooColors.green700,
                   ),
                 ),
               ],
@@ -718,6 +647,29 @@ class HomeScreen extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+
+  /// A small labelled stat for the recovery card footer.
+  Widget _statColumn(String label, String value, Color valueColor) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: DetectooText.eyebrow.copyWith(
+            color: DetectooColors.textFaint,
+            letterSpacing: 0.8,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: DetectooText.bodyStrong.copyWith(color: valueColor),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
     );
   }
 
@@ -770,10 +722,7 @@ class _SheetContainer extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: 16,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             child: Row(
               children: [
                 SectionTitle(title: title, icon: icon),
@@ -907,10 +856,7 @@ class _TasksSheetState extends ConsumerState<_TasksSheet> {
           return InkWell(
             onTap: () => _toggle(task),
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 12,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               child: Row(
                 children: [
                   Container(
@@ -947,8 +893,9 @@ class _TasksSheetState extends ConsumerState<_TasksSheet> {
                             color: done
                                 ? colorScheme.onSurface.withValues(alpha: 0.4)
                                 : colorScheme.onSurface,
-                            decoration:
-                                done ? TextDecoration.lineThrough : null,
+                            decoration: done
+                                ? TextDecoration.lineThrough
+                                : null,
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -968,8 +915,9 @@ class _TasksSheetState extends ConsumerState<_TasksSheet> {
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
                                 color: done
-                                    ? colorScheme.onSurface
-                                        .withValues(alpha: 0.3)
+                                    ? colorScheme.onSurface.withValues(
+                                        alpha: 0.3,
+                                      )
                                     : colorScheme.secondary,
                               ),
                             ),
@@ -998,7 +946,11 @@ Widget _sheetEmpty(
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 40, color: colorScheme.primary.withValues(alpha: 0.35)),
+        Icon(
+          icon,
+          size: 40,
+          color: colorScheme.primary.withValues(alpha: 0.35),
+        ),
         const SizedBox(height: 8),
         Text(
           message,

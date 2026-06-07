@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user.dart';
 import '../providers/auth_provider.dart';
 import '../routes.dart';
+import '../theme/detectoo_colors.dart';
+import '../theme/detectoo_text_styles.dart';
 
 /// Splash screen displayed on app launch.
 ///
@@ -56,15 +58,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       ),
     );
 
-    _textSlide = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.4, 0.7, curve: Curves.easeOut),
-      ),
-    );
+    _textSlide = Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.4, 0.7, curve: Curves.easeOut),
+          ),
+        );
 
     _loaderOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
@@ -107,69 +107,28 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
-      body: Container(
+      backgroundColor: DetectooColors.canvasCream,
+      body: SizedBox(
         width: double.infinity,
         height: double.infinity,
-        color: colorScheme.surface,
         child: Stack(
           children: [
-            // Decorative circles
+            // Faint seedling watermark, bottom-left.
             Positioned(
-              top: -60,
-              right: -40,
-              child: Container(
-                width: 200,
-                height: 200,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: colorScheme.primary.withValues(alpha: 0.06),
-                ),
+              bottom: -10,
+              left: -20,
+              child: Icon(
+                Icons.eco_rounded,
+                size: 220,
+                color: DetectooColors.green600.withValues(alpha: 0.05),
               ),
             ),
+            // Progress line + eyebrow at the bottom.
             Positioned(
-              bottom: -80,
-              left: -50,
-              child: Container(
-                width: 250,
-                height: 250,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: colorScheme.primary.withValues(alpha: 0.04),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 150,
-              left: 30,
-              child: Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: colorScheme.secondary.withValues(alpha: 0.08),
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: 200,
-              right: 40,
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: colorScheme.secondary.withValues(alpha: 0.06),
-                ),
-              ),
-            ),
-            // Loading indicator at bottom
-            Positioned(
-              bottom: 80,
-              left: 0,
-              right: 0,
+              bottom: 56,
+              left: 60,
+              right: 60,
               child: AnimatedBuilder(
                 animation: _loaderOpacity,
                 builder: (context, _) {
@@ -177,24 +136,22 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     opacity: _loaderOpacity.value,
                     child: Column(
                       children: [
-                        SizedBox(
-                          width: 28,
-                          height: 28,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              colorScheme.primary.withValues(alpha: 0.5),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(999),
+                          child: LinearProgressIndicator(
+                            minHeight: 3,
+                            backgroundColor: DetectooColors.green100,
+                            valueColor: const AlwaysStoppedAnimation<Color>(
+                              DetectooColors.green600,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 16),
                         Text(
-                          'Loading...',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: colorScheme.onSurface
-                                .withValues(alpha: 0.4),
-                            letterSpacing: 0.5,
+                          'INITIALISING AI CORE',
+                          style: DetectooText.eyebrow.copyWith(
+                            color: DetectooColors.textMuted,
+                            letterSpacing: 1.6,
                           ),
                         ),
                       ],
@@ -203,7 +160,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 },
               ),
             ),
-            // Main content
+            // Main content.
             Center(
               child: AnimatedBuilder(
                 animation: _controller,
@@ -211,43 +168,52 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Logo
+                      // Logo lockup: app tile + wordmark.
                       Opacity(
                         opacity: _logoOpacity.value,
                         child: Transform.scale(
                           scale: _logoScale.value,
-                          child: Container(
-                            width: 110,
-                            height: 110,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  colorScheme.primary,
-                                  const Color(0xFF00695C),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(30),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: colorScheme.primary
-                                      .withValues(alpha: 0.3),
-                                  blurRadius: 24,
-                                  offset: const Offset(0, 8),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 44,
+                                height: 44,
+                                decoration: BoxDecoration(
+                                  color: DetectooColors.green600,
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.local_florist_rounded,
-                              size: 54,
-                              color: Colors.white,
-                            ),
+                                child: const Icon(
+                                  Icons.search_rounded,
+                                  size: 26,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Text.rich(
+                                TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: 'detect',
+                                      style: DetectooText.h2.copyWith(
+                                        color: DetectooColors.green900,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: 'oo',
+                                      style: DetectooText.h2.copyWith(
+                                        color: DetectooColors.green500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                      const SizedBox(height: 32),
-                      // App name
+                      const SizedBox(height: 64),
+                      // App name + tagline.
                       SlideTransition(
                         position: _textSlide,
                         child: Opacity(
@@ -256,27 +222,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                             children: [
                               Text(
                                 'Detectoo',
-                                style: TextStyle(
-                                  fontFamily: 'Georgia',
-                                  fontSize: 38,
-                                  fontWeight: FontWeight.bold,
-                                  color: colorScheme.primary,
-                                  letterSpacing: 1,
+                                style: DetectooText.h1.copyWith(
+                                  color: DetectooColors.green700,
                                 ),
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 12),
                               Text(
-                                'The Digital Curator\nfor your plants',
+                                'The Digital Curator for your Garden.',
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontFamily: 'Georgia',
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
-                                  fontStyle: FontStyle.italic,
-                                  color: colorScheme.onSurface
-                                      .withValues(alpha: 0.55),
-                                  height: 1.4,
-                                  letterSpacing: 0.3,
+                                style: DetectooText.body.copyWith(
+                                  color: DetectooColors.textMuted,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ],

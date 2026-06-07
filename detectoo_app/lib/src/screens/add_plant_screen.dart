@@ -10,6 +10,8 @@ import '../models/plant.dart';
 import '../models/plant_detection.dart';
 import '../providers/api_providers.dart';
 import '../services/notification_service.dart';
+import '../theme/detectoo_colors.dart';
+import '../theme/detectoo_text_styles.dart';
 
 enum _Phase { pick, detecting, confirm, creating }
 
@@ -62,8 +64,9 @@ class _AddPlantScreenState extends ConsumerState<AddPlantScreen> {
     setState(() => _phase = _Phase.detecting);
 
     try {
-      final detection =
-          await ref.read(plantsRepositoryProvider).detectPlantFromPhoto(image);
+      final detection = await ref
+          .read(plantsRepositoryProvider)
+          .detectPlantFromPhoto(image);
 
       _nameController.text = detection.name;
       setState(() {
@@ -75,8 +78,9 @@ class _AddPlantScreenState extends ConsumerState<AddPlantScreen> {
       });
     } on ApiException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(e.message)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
         setState(() => _phase = _Phase.pick);
       }
     } catch (_) {
@@ -101,7 +105,9 @@ class _AddPlantScreenState extends ConsumerState<AddPlantScreen> {
     setState(() => _phase = _Phase.creating);
 
     try {
-      final plant = await ref.read(plantsRepositoryProvider).createPlant(
+      final plant = await ref
+          .read(plantsRepositoryProvider)
+          .createPlant(
             name: name,
             iconCodePoint: detection.iconCodePoint,
             healthStatus: _selectedStatus,
@@ -112,27 +118,28 @@ class _AddPlantScreenState extends ConsumerState<AddPlantScreen> {
 
       final rp = detection.recoveryPlan;
       if (rp != null) {
-        final createdPlan =
-            await ref.read(recoveryRepositoryProvider).createRecoveryPlan(
-                  plantId: plant.id,
-                  condition: rp.condition,
-                  severity: rp.severity,
-                  summary: rp.summary,
-                  estimatedRecovery: rp.estimatedRecovery,
-                  doList: rp.doList,
-                  dontList: rp.dontList,
-                  signsOfImprovement: rp.signsOfImprovement,
-                  steps: rp.steps
-                      .map(
-                        (s) => RecoveryStepDraft(
-                          title: s.title,
-                          description: s.description,
-                          iconCodePoint: 0xE15B,
-                          stepOrder: s.stepOrder,
-                        ),
-                      )
-                      .toList(),
-                );
+        final createdPlan = await ref
+            .read(recoveryRepositoryProvider)
+            .createRecoveryPlan(
+              plantId: plant.id,
+              condition: rp.condition,
+              severity: rp.severity,
+              summary: rp.summary,
+              estimatedRecovery: rp.estimatedRecovery,
+              doList: rp.doList,
+              dontList: rp.dontList,
+              signsOfImprovement: rp.signsOfImprovement,
+              steps: rp.steps
+                  .map(
+                    (s) => RecoveryStepDraft(
+                      title: s.title,
+                      description: s.description,
+                      iconCodePoint: 0xE15B,
+                      stepOrder: s.stepOrder,
+                    ),
+                  )
+                  .toList(),
+            );
 
         // Schedule a daily notification for each created step.
         for (final step in createdPlan.steps) {
@@ -150,8 +157,9 @@ class _AddPlantScreenState extends ConsumerState<AddPlantScreen> {
       if (mounted) Navigator.of(context).pop();
     } on ApiException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(e.message)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
         setState(() => _phase = _Phase.confirm);
       }
     } catch (_) {
@@ -171,22 +179,14 @@ class _AddPlantScreenState extends ConsumerState<AddPlantScreen> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: colorScheme.surface,
-        elevation: 0,
         title: Text(
           _phase == _Phase.confirm || _phase == _Phase.creating
               ? 'Confirm Plant'
               : 'Add Plant',
-          style: TextStyle(
-            fontFamily: 'Georgia',
-            fontWeight: FontWeight.bold,
-            color: colorScheme.onSurface,
-          ),
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, color: colorScheme.onSurface),
+          icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () {
             if (_phase == _Phase.confirm) {
               setState(() => _phase = _Phase.pick);
@@ -378,25 +378,22 @@ class _AddPlantScreenState extends ConsumerState<AddPlantScreen> {
     return FilledButton.icon(
       onPressed: enabled ? _detect : null,
       style: FilledButton.styleFrom(
-        backgroundColor: colorScheme.secondary,
+        backgroundColor: DetectooColors.terracotta,
         disabledBackgroundColor: colorScheme.onSurface.withValues(alpha: 0.12),
         minimumSize: const Size.fromHeight(52),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        shape: const StadiumBorder(),
       ),
       icon: isDetecting
-          ? SizedBox(
+          ? const SizedBox(
               width: 18,
               height: 18,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                color: colorScheme.onSecondary,
+                color: Colors.white,
               ),
             )
           : const Icon(Icons.search_rounded),
-      label: Text(
-        isDetecting ? 'Identifying…' : 'Identify Plant',
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-      ),
+      label: Text(isDetecting ? 'Identifying…' : 'Identify Plant'),
     );
   }
 
@@ -461,18 +458,21 @@ class _AddPlantScreenState extends ConsumerState<AddPlantScreen> {
   }
 
   Widget _buildDiseaseWarning(RecoveryPlanDetection rp) {
-    const orange = Color(0xFFE65100);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: orange.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: orange.withValues(alpha: 0.35)),
+        color: DetectooColors.terracottaBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: DetectooColors.terracottaSoft),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.warning_amber_rounded, color: orange, size: 20),
+          const Icon(
+            Icons.error_rounded,
+            color: DetectooColors.terracotta,
+            size: 20,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -480,19 +480,16 @@ class _AddPlantScreenState extends ConsumerState<AddPlantScreen> {
               children: [
                 Text(
                   rp.condition,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: orange,
+                  style: DetectooText.bodyStrong.copyWith(
+                    color: DetectooColors.terracotta,
                   ),
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  '${rp.severity} severity · A recovery plan will be created automatically.',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: orange.withValues(alpha: 0.85),
-                    height: 1.4,
+                  '${rp.severity} severity · A recovery plan will be '
+                  'created automatically.',
+                  style: DetectooText.small.copyWith(
+                    color: DetectooColors.terracottaStrong,
                   ),
                 ),
               ],
@@ -523,8 +520,9 @@ class _AddPlantScreenState extends ConsumerState<AddPlantScreen> {
           decoration: InputDecoration(
             hintText: 'e.g. Monstera Deliciosa',
             filled: true,
-            fillColor: colorScheme.surfaceContainerHighest
-                .withValues(alpha: 0.4),
+            fillColor: colorScheme.surfaceContainerHighest.withValues(
+              alpha: 0.4,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide.none,
@@ -570,14 +568,14 @@ class _AddPlantScreenState extends ConsumerState<AddPlantScreen> {
                     decoration: BoxDecoration(
                       color: selected
                           ? color.withValues(alpha: 0.15)
-                          : colorScheme.surfaceContainerHighest
-                              .withValues(alpha: 0.3),
+                          : colorScheme.surfaceContainerHighest.withValues(
+                              alpha: 0.3,
+                            ),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: selected
                             ? color
-                            : colorScheme.outlineVariant
-                                .withValues(alpha: 0.4),
+                            : colorScheme.outlineVariant.withValues(alpha: 0.4),
                         width: selected ? 1.5 : 1,
                       ),
                     ),
@@ -587,7 +585,9 @@ class _AddPlantScreenState extends ConsumerState<AddPlantScreen> {
                           width: 10,
                           height: 10,
                           decoration: BoxDecoration(
-                            color: selected ? color : color.withValues(alpha: 0.4),
+                            color: selected
+                                ? color
+                                : color.withValues(alpha: 0.4),
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -602,8 +602,7 @@ class _AddPlantScreenState extends ConsumerState<AddPlantScreen> {
                                 : FontWeight.w500,
                             color: selected
                                 ? color
-                                : colorScheme.onSurface
-                                    .withValues(alpha: 0.5),
+                                : colorScheme.onSurface.withValues(alpha: 0.5),
                           ),
                         ),
                       ],
@@ -629,7 +628,7 @@ class _AddPlantScreenState extends ConsumerState<AddPlantScreen> {
       label: 'Sunlight',
       options: options,
       selected: _selectedSunlight,
-      accentColor: const Color(0xFFFF8F00),
+      accentColor: DetectooColors.warning,
       disabled: disabled,
       onSelect: (v) => setState(() => _selectedSunlight = v),
       colorScheme: colorScheme,
@@ -646,7 +645,7 @@ class _AddPlantScreenState extends ConsumerState<AddPlantScreen> {
       label: 'Humidity',
       options: options,
       selected: _selectedHumidity,
-      accentColor: const Color(0xFF0277BD),
+      accentColor: DetectooColors.green500,
       disabled: disabled,
       onSelect: (v) => setState(() => _selectedHumidity = v),
       colorScheme: colorScheme,
@@ -675,7 +674,9 @@ class _AddPlantScreenState extends ConsumerState<AddPlantScreen> {
         ),
         const SizedBox(height: 10),
         Row(
-          children: options.map(((String value, String title, IconData icon) record) {
+          children: options.map((
+            (String value, String title, IconData icon) record,
+          ) {
             final (value, title, icon) = record;
             final isSelected = selected == value;
             return Expanded(
@@ -689,14 +690,14 @@ class _AddPlantScreenState extends ConsumerState<AddPlantScreen> {
                     decoration: BoxDecoration(
                       color: isSelected
                           ? accentColor.withValues(alpha: 0.12)
-                          : colorScheme.surfaceContainerHighest
-                              .withValues(alpha: 0.3),
+                          : colorScheme.surfaceContainerHighest.withValues(
+                              alpha: 0.3,
+                            ),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isSelected
                             ? accentColor
-                            : colorScheme.outlineVariant
-                                .withValues(alpha: 0.4),
+                            : colorScheme.outlineVariant.withValues(alpha: 0.4),
                         width: isSelected ? 1.5 : 1,
                       ),
                     ),
@@ -739,25 +740,22 @@ class _AddPlantScreenState extends ConsumerState<AddPlantScreen> {
     return FilledButton.icon(
       onPressed: isCreating ? null : _submit,
       style: FilledButton.styleFrom(
-        backgroundColor: colorScheme.secondary,
+        backgroundColor: DetectooColors.green600,
         disabledBackgroundColor: colorScheme.onSurface.withValues(alpha: 0.12),
         minimumSize: const Size.fromHeight(52),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        shape: const StadiumBorder(),
       ),
       icon: isCreating
-          ? SizedBox(
+          ? const SizedBox(
               width: 18,
               height: 18,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                color: colorScheme.onSecondary,
+                color: Colors.white,
               ),
             )
           : const Icon(Icons.check_rounded),
-      label: Text(
-        isCreating ? 'Adding Plant…' : 'Add Plant',
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-      ),
+      label: Text(isCreating ? 'Adding Plant…' : 'Add Plant'),
     );
   }
 }

@@ -10,7 +10,10 @@ import '../models/plant.dart';
 import '../models/recovery_plan.dart';
 import '../providers/api_providers.dart';
 import '../services/notification_service.dart';
-import '../widgets/gradient_banner.dart';
+import '../theme/detectoo_colors.dart';
+import '../theme/detectoo_text_styles.dart';
+import '../widgets/detectoo_card.dart';
+import '../widgets/eyebrow_label.dart';
 import '../widgets/section_title.dart';
 import '../widgets/status_chip.dart';
 
@@ -35,11 +38,9 @@ class _RecoveryScreenState extends ConsumerState<RecoveryScreen> {
   Future<void> _markStepDone(RecoveryPlan plan, RecoveryStep step) async {
     setState(() => _completingSteps.add(step.id));
     try {
-      await ref.read(recoveryRepositoryProvider).updateRecoveryStep(
-            plan.id,
-            step.id,
-            completed: true,
-          );
+      await ref
+          .read(recoveryRepositoryProvider)
+          .updateRecoveryStep(plan.id, step.id, completed: true);
       await NotificationService.cancelStepReminder(step.id);
       ref.invalidate(recoveryPlanForPlantProvider(plan.plantId));
     } catch (_) {
@@ -53,10 +54,7 @@ class _RecoveryScreenState extends ConsumerState<RecoveryScreen> {
     }
   }
 
-  Future<void> _pickAndUploadPhoto(
-    RecoveryPlan plan,
-    RecoveryStep step,
-  ) async {
+  Future<void> _pickAndUploadPhoto(RecoveryPlan plan, RecoveryStep step) async {
     final picker = ImagePicker();
     final source = await _askImageSource();
     if (source == null || !mounted) return;
@@ -66,11 +64,9 @@ class _RecoveryScreenState extends ConsumerState<RecoveryScreen> {
 
     setState(() => _uploadingSteps.add(step.id));
     try {
-      await ref.read(recoveryRepositoryProvider).uploadStepPhoto(
-            plan.id,
-            step.id,
-            File(picked.path),
-          );
+      await ref
+          .read(recoveryRepositoryProvider)
+          .uploadStepPhoto(plan.id, step.id, File(picked.path));
       ref.invalidate(recoveryPlanForPlantProvider(plan.plantId));
     } catch (_) {
       if (mounted) {
@@ -237,23 +233,15 @@ class _RecoveryScreenState extends ConsumerState<RecoveryScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              '${plant.name} has no active recovery plan',
+              '${plant.name} has no active recovery plan.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Georgia',
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: colorScheme.onSurface,
-              ),
+              style: DetectooText.h3,
             ),
             const SizedBox(height: 8),
             Text(
               'Scan your plant to detect issues and start a recovery plan.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13,
-                color: colorScheme.onSurface.withValues(alpha: 0.6),
-              ),
+              style: DetectooText.small,
             ),
           ],
         ),
@@ -315,75 +303,102 @@ class _RecoveryScreenState extends ConsumerState<RecoveryScreen> {
     );
   }
 
-  /// Builds the header with plant name, condition, and severity.
+  /// Builds the header: eyebrow, title, summary, moody plant image, and a
+  /// critical-care alert overlay.
   Widget _buildHeader(
     Plant? plant,
     RecoveryPlan plan,
     ColorScheme colorScheme,
   ) {
-    final sevColor = _severityColor(plan.severity);
+    final plantName = plant?.name ?? 'Your specimen';
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: GradientBanner(
-        colors: [colorScheme.primary, const Color(0xFF00695C)],
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.healing_rounded,
-                size: 36,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 14),
-            if (plant != null) ...[
-              Text(
-                plant.name,
-                style: const TextStyle(
-                  fontFamily: 'Georgia',
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const EyebrowLabel('DIAGNOSIS CONFIRMED'),
+          const SizedBox(height: 10),
+          Text('$plantName Recovery.', style: DetectooText.h1),
+          const SizedBox(height: 10),
+          Text(
+            plan.summary,
+            style: DetectooText.body.copyWith(color: DetectooColors.textMuted),
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 16),
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  height: 180,
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        DetectooColors.surfaceDark,
+                        DetectooColors.surfaceDarkDeep,
+                      ],
+                    ),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      plant?.iconData ?? Icons.local_florist_rounded,
+                      size: 64,
+                      color: DetectooColors.green300.withValues(alpha: 0.5),
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(height: 4),
+              Positioned(
+                left: 12,
+                bottom: 12,
+                right: 12,
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: DetectooColors.surfaceWhite,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: DetectooShadows.card,
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.error_rounded,
+                        size: 18,
+                        color: DetectooColors.terracotta,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: '${plan.severity} severity — ',
+                                style: DetectooText.small.copyWith(
+                                  color: DetectooColors.terracotta,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              TextSpan(
+                                text: plan.condition,
+                                style: DetectooText.small,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
-            Text(
-              plan.condition,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: Colors.white.withValues(alpha: 0.85),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-              decoration: BoxDecoration(
-                color: sevColor.withValues(alpha: 0.25),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: sevColor.withValues(alpha: 0.4),
-                ),
-              ),
-              child: Text(
-                '${plan.severity} Severity',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -398,20 +413,12 @@ class _RecoveryScreenState extends ConsumerState<RecoveryScreen> {
           icon: Icons.help_outline_rounded,
         ),
         const SizedBox(height: 12),
-        Container(
-          width: double.infinity,
+        DetectooCard(
+          variant: DetectooCardVariant.cream,
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: colorScheme.primaryContainer.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(14),
-          ),
           child: Text(
             plan.summary,
-            style: TextStyle(
-              fontSize: 14,
-              height: 1.6,
-              color: colorScheme.onSurface.withValues(alpha: 0.75),
-            ),
+            style: DetectooText.body.copyWith(color: DetectooColors.textBody),
           ),
         ),
       ],
@@ -422,71 +429,49 @@ class _RecoveryScreenState extends ConsumerState<RecoveryScreen> {
   Widget _buildProgressSection(RecoveryPlan plan, ColorScheme colorScheme) {
     final percentage = (plan.progress * 100).toInt();
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-        ),
-      ),
+    return DetectooCard(
+      variant: DetectooCardVariant.dark,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.timeline_rounded,
-                  size: 20, color: colorScheme.secondary),
-              const SizedBox(width: 8),
               Text(
                 'Recovery Progress',
-                style: TextStyle(
-                  fontFamily: 'Georgia',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurface,
-                ),
+                style: DetectooText.h3.copyWith(color: Colors.white),
               ),
               const Spacer(),
               Text(
                 '$percentage%',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.secondary,
-                ),
+                style: DetectooText.h3.copyWith(color: DetectooColors.green300),
               ),
             ],
           ),
           const SizedBox(height: 14),
           ClipRRect(
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(999),
             child: LinearProgressIndicator(
               value: plan.progress,
-              minHeight: 10,
-              backgroundColor:
-                  colorScheme.secondaryContainer.withValues(alpha: 0.5),
-              valueColor:
-                  AlwaysStoppedAnimation<Color>(colorScheme.secondary),
+              minHeight: 8,
+              backgroundColor: Colors.white.withValues(alpha: 0.12),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                DetectooColors.green500,
+              ),
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
           Row(
             children: [
               _buildTimelineInfo(
                 'Started',
                 plan.startedOnLabel,
                 Icons.calendar_today_outlined,
-                colorScheme,
               ),
-              const SizedBox(width: 20),
+              const SizedBox(width: 24),
               _buildTimelineInfo(
                 'Est. Recovery',
                 plan.estimatedRecoveryLabel,
                 Icons.schedule_outlined,
-                colorScheme,
               ),
             ],
           ),
@@ -495,37 +480,26 @@ class _RecoveryScreenState extends ConsumerState<RecoveryScreen> {
     );
   }
 
-  /// Builds a small timeline info item.
-  Widget _buildTimelineInfo(
-    String label,
-    String value,
-    IconData icon,
-    ColorScheme colorScheme,
-  ) {
+  /// Builds a small timeline info item for the dark vitals card.
+  Widget _buildTimelineInfo(String label, String value, IconData icon) {
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 15,
-          color: colorScheme.onSurface.withValues(alpha: 0.4),
-        ),
+        Icon(icon, size: 15, color: DetectooColors.green300),
         const SizedBox(width: 6),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               label,
-              style: TextStyle(
-                fontSize: 11,
-                color: colorScheme.onSurface.withValues(alpha: 0.5),
+              style: DetectooText.small.copyWith(
+                color: DetectooColors.textOnDarkMuted,
               ),
             ),
             Text(
               value,
-              style: TextStyle(
+              style: DetectooText.bodyStrong.copyWith(
+                color: Colors.white,
                 fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: colorScheme.onSurface,
               ),
             ),
           ],
@@ -562,9 +536,8 @@ class _RecoveryScreenState extends ConsumerState<RecoveryScreen> {
                       height: 28,
                       decoration: BoxDecoration(
                         color: step.completed
-                            ? colorScheme.secondary
-                            : colorScheme.primaryContainer
-                                .withValues(alpha: 0.4),
+                            ? DetectooColors.green600
+                            : DetectooColors.green100,
                         shape: BoxShape.circle,
                       ),
                       child: Center(
@@ -576,10 +549,9 @@ class _RecoveryScreenState extends ConsumerState<RecoveryScreen> {
                               )
                             : Text(
                                 '${index + 1}',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: colorScheme.primary,
+                                style: DetectooText.small.copyWith(
+                                  color: DetectooColors.green700,
+                                  fontWeight: FontWeight.w800,
                                 ),
                               ),
                       ),
@@ -589,9 +561,8 @@ class _RecoveryScreenState extends ConsumerState<RecoveryScreen> {
                         child: Container(
                           width: 2,
                           color: step.completed
-                              ? colorScheme.secondary.withValues(alpha: 0.3)
-                              : colorScheme.outlineVariant
-                                  .withValues(alpha: 0.3),
+                              ? DetectooColors.green300
+                              : DetectooColors.borderSoft,
                         ),
                       ),
                   ],
@@ -605,15 +576,10 @@ class _RecoveryScreenState extends ConsumerState<RecoveryScreen> {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: step.completed
-                        ? colorScheme.secondaryContainer
-                            .withValues(alpha: 0.15)
-                        : colorScheme.surface,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: step.completed
-                          ? colorScheme.secondary.withValues(alpha: 0.25)
-                          : colorScheme.outlineVariant.withValues(alpha: 0.5),
-                    ),
+                        ? DetectooColors.green050
+                        : DetectooColors.surfaceWhite,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: step.completed ? null : DetectooShadows.card,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -623,67 +589,29 @@ class _RecoveryScreenState extends ConsumerState<RecoveryScreen> {
                           Icon(
                             step.iconData,
                             size: 18,
-                            color: colorScheme.primary,
+                            color: DetectooColors.green600,
                           ),
                           const SizedBox(width: 8),
                           Expanded(
-                            child: Text(
-                              step.title,
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                                color: colorScheme.onSurface,
-                              ),
-                            ),
+                            child: Text(step.title, style: DetectooText.h3),
                           ),
                           if (step.completed)
-                            StatusChip(
-                              label: 'Done',
-                              color: colorScheme.secondary,
-                            )
+                            const StatusChip(label: 'Done')
                           else if (isCompleting)
-                            SizedBox(
+                            const SizedBox(
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: colorScheme.secondary,
+                                color: DetectooColors.green600,
                               ),
                             )
                           else
                             GestureDetector(
                               onTap: () => _markStepDone(plan, step),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                  color: colorScheme.secondaryContainer
-                                      .withValues(alpha: 0.4),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
-                                    color: colorScheme.secondary
-                                        .withValues(alpha: 0.3),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.check_circle_outline_rounded,
-                                      size: 14,
-                                      color: colorScheme.secondary,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      'Mark done',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w600,
-                                        color: colorScheme.secondary,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                              child: const StatusChip(
+                                label: 'Mark done',
+                                icon: Icons.check_circle_outline_rounded,
                               ),
                             ),
                         ],
@@ -691,11 +619,9 @@ class _RecoveryScreenState extends ConsumerState<RecoveryScreen> {
                       const SizedBox(height: 8),
                       Text(
                         step.description,
-                        style: TextStyle(
-                          fontSize: 13,
+                        style: DetectooText.small.copyWith(
+                          color: DetectooColors.textBody,
                           height: 1.5,
-                          color:
-                              colorScheme.onSurface.withValues(alpha: 0.65),
                         ),
                       ),
                       // Photo gallery + add button
@@ -839,154 +765,91 @@ class _RecoveryScreenState extends ConsumerState<RecoveryScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionTitle(
-          title: "Do's & Don'ts",
-          icon: Icons.rule_rounded,
-        ),
+        const SectionTitle(title: "Do's & Don'ts", icon: Icons.rule_rounded),
         const SizedBox(height: 12),
         // Do's
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: const Color(0xFF2E7D32).withValues(alpha: 0.06),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: const Color(0xFF2E7D32).withValues(alpha: 0.15),
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.thumb_up_outlined,
-                    size: 18,
-                    color: const Color(0xFF2E7D32),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Do This',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF2E7D32),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              ...plan.doList.map(
-                (item) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(
-                        Icons.check_circle_outline_rounded,
-                        size: 16,
-                        color: const Color(0xFF2E7D32),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          item,
-                          style: TextStyle(
-                            fontSize: 13,
-                            height: 1.4,
-                            color: colorScheme.onSurface
-                                .withValues(alpha: 0.7),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
+        _buildDoDontCard(
+          title: 'Do This',
+          icon: Icons.thumb_up_outlined,
+          itemIcon: Icons.check_circle_outline_rounded,
+          color: DetectooColors.green600,
+          background: DetectooColors.green050,
+          items: plan.doList,
         ),
         const SizedBox(height: 12),
         // Don'ts
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: const Color(0xFFC62828).withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: const Color(0xFFC62828).withValues(alpha: 0.12),
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.thumb_down_outlined,
-                    size: 18,
-                    color: const Color(0xFFC62828),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Avoid This',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFFC62828),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              ...plan.dontList.map(
-                (item) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(
-                        Icons.cancel_outlined,
-                        size: 16,
-                        color: const Color(0xFFC62828),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          item,
-                          style: TextStyle(
-                            fontSize: 13,
-                            height: 1.4,
-                            color: colorScheme.onSurface
-                                .withValues(alpha: 0.7),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
+        _buildDoDontCard(
+          title: 'Avoid This',
+          icon: Icons.thumb_down_outlined,
+          itemIcon: Icons.cancel_outlined,
+          color: DetectooColors.terracotta,
+          background: DetectooColors.terracottaBg,
+          items: plan.dontList,
         ),
       ],
     );
   }
 
-  /// Builds the signs of improvement checklist.
-  Widget _buildSignsOfImprovement(
-    RecoveryPlan plan,
-    ColorScheme colorScheme,
-  ) {
+  /// Builds one of the Do / Don't cards.
+  Widget _buildDoDontCard({
+    required String title,
+    required IconData icon,
+    required IconData itemIcon,
+    required Color color,
+    required Color background,
+    required BuiltList<String> items,
+  }) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colorScheme.primaryContainer.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(14),
+        color: background,
+        borderRadius: BorderRadius.circular(16),
       ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 18, color: color),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: DetectooText.bodyStrong.copyWith(color: color),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ...items.map(
+            (item) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(itemIcon, size: 16, color: color),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      item,
+                      style: DetectooText.small.copyWith(
+                        color: DetectooColors.textBody,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Builds the signs of improvement checklist.
+  Widget _buildSignsOfImprovement(RecoveryPlan plan, ColorScheme colorScheme) {
+    return DetectooCard(
+      variant: DetectooCardVariant.cream,
+      padding: const EdgeInsets.all(16),
       child: Column(
         children: plan.signsOfImprovement
             .map(
@@ -995,20 +858,17 @@ class _RecoveryScreenState extends ConsumerState<RecoveryScreen> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      Icons.visibility_outlined,
+                    const Icon(
+                      Icons.check_circle_rounded,
                       size: 16,
-                      color: colorScheme.primary,
+                      color: DetectooColors.green500,
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         sign,
-                        style: TextStyle(
-                          fontSize: 13,
-                          height: 1.4,
-                          color:
-                              colorScheme.onSurface.withValues(alpha: 0.7),
+                        style: DetectooText.small.copyWith(
+                          color: DetectooColors.textBody,
                         ),
                       ),
                     ),
@@ -1019,19 +879,5 @@ class _RecoveryScreenState extends ConsumerState<RecoveryScreen> {
             .toList(),
       ),
     );
-  }
-
-  /// Returns a color based on severity level.
-  Color _severityColor(String severity) {
-    switch (severity.toLowerCase()) {
-      case 'mild':
-        return const Color(0xFF2E7D32);
-      case 'moderate':
-        return const Color(0xFFE65100);
-      case 'severe':
-        return const Color(0xFFC62828);
-      default:
-        return const Color(0xFF616161);
-    }
   }
 }
