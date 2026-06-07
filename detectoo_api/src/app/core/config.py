@@ -75,6 +75,14 @@ class StorageSettings(BaseSettings):
     UPLOADS_DIR: str = "/app/uploads"
 
 
+class ResendSettings(BaseSettings):
+    """Resend email service settings."""
+
+    RESEND_API_KEY: SecretStr = SecretStr("")
+    RESEND_FROM_EMAIL: str = "noreply@detectoo.tech"
+    FRONTEND_URL: str = "https://api.detectoo.tech"
+
+
 class AISettings(BaseSettings):
     """AI / LLM service settings."""
 
@@ -104,6 +112,7 @@ class Settings(
     FirstUserSettings,
     TestUserSettings,
     StorageSettings,
+    ResendSettings,
     AISettings,
     EnvironmentSettings,
     CORSSettings,

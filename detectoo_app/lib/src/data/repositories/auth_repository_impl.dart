@@ -91,6 +91,11 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<void> resendVerificationEmail() async {
+    await _client.post('/user/me/resend-verification');
+  }
+
+  @override
   Future<void> logout() async {
     final token = await _tokenStorage.readAccessToken();
     if (token != null && token.isNotEmpty) {
@@ -113,7 +118,8 @@ class AuthRepositoryImpl implements AuthRepository {
       (b) => b
         ..name = json['name'] as String
         ..email = json['email'] as String
-        ..memberSince = '',
+        ..memberSince = ''
+        ..isEmailVerified = json['is_email_verified'] as bool?,
     );
   }
 }

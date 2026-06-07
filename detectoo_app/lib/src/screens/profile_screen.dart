@@ -153,6 +153,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     color: Colors.white.withValues(alpha: 0.75),
                   ),
                 ),
+                if (user?.isEmailVerified != null) ...[
+                  const SizedBox(height: 10),
+                  _buildVerificationPill(user!.isEmailVerified!),
+                ],
                 const SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -176,6 +180,65 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
       ),
     );
+  }
+
+  /// Builds the email-verification status pill shown in the header.
+  ///
+  /// Green and static when verified; amber and tappable (to resend the
+  /// verification email) when not.
+  Widget _buildVerificationPill(bool verified) {
+    final icon = verified
+        ? Icons.verified_rounded
+        : Icons.error_outline_rounded;
+    final label = verified ? 'Email verified' : 'Email not verified · Resend';
+
+    final pill = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: Colors.white),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.white.withValues(alpha: 0.95),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (verified) return pill;
+
+    return GestureDetector(
+      onTap: _resendVerification,
+      child: pill,
+    );
+  }
+
+  /// Resends the verification email and surfaces the outcome via a snackbar.
+  Future<void> _resendVerification() async {
+    try {
+      await ref.read(authProvider.notifier).resendVerification();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('Verification email sent!')),
+        );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to resend email. Try again.')),
+      );
+    }
   }
 
   /// Builds the plant stats row.

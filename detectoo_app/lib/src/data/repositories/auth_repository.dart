@@ -38,6 +38,12 @@ abstract class AuthRepository {
     required String password,
   });
 
+  /// Requests a new verification email for the currently signed-in user.
+  ///
+  /// Throws [ApiException] if the server call fails (e.g. already verified,
+  /// or not authenticated).
+  Future<void> resendVerificationEmail();
+
   /// Revokes the current session on the server and clears the stored
   /// token. Safe to call even when not logged in.
   Future<void> logout();

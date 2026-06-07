@@ -48,6 +48,22 @@ class AuthNotifier extends AsyncNotifier<User?> {
         ));
   }
 
+  /// Resends the verification email for the currently signed-in user.
+  ///
+  /// Does not change the notifier state on success — the user is still
+  /// unverified until they click the link in the email.
+  Future<void> resendVerification() async {
+    await _repo.resendVerificationEmail();
+  }
+
+  /// Re-fetches the current user's profile and updates the state.
+  ///
+  /// Used to pick up an email-verification status change after the user
+  /// clicks the link in their inbox (which happens outside the app).
+  Future<void> refreshUser() async {
+    state = AsyncValue.data(await _repo.fetchCurrentUser());
+  }
+
   /// Signs out the current user. After this returns the state is
   /// `AsyncValue.data(null)` regardless of whether server-side
   /// revocation succeeded — the token is always cleared locally.
