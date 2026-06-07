@@ -10,6 +10,7 @@ import '../providers/api_providers.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/detectoo_card.dart';
 import '../widgets/section_title.dart';
+import '../widgets/verification_banner.dart';
 
 /// Dashboard of the Detectoo application.
 ///
@@ -40,6 +41,7 @@ class HomeScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const VerificationBanner(),
               _buildTopBar(
                 context,
                 ref,

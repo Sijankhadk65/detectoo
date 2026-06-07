@@ -27,6 +27,7 @@ class UserRead(BaseModel):
     username: Annotated[str, Field(min_length=2, max_length=20, pattern=r"^[a-z0-9]+$", examples=["userson"])]
     email: Annotated[EmailStr, Field(examples=["user.userson@example.com"])]
     profile_image_url: str
+    is_email_verified: bool
 
 
 class UserCreate(UserBase):

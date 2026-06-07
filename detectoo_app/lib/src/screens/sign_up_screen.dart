@@ -68,7 +68,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     ref.read(authProvider).when(
       data: (user) {
         if (user != null) {
-          Navigator.pushReplacementNamed(context, Routes.home);
+          Navigator.pushReplacementNamed(context, Routes.emailVerification);
         }
       },
       error: (error, _) {
