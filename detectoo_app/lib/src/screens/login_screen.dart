@@ -4,7 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/api/api_exception.dart';
 import '../providers/auth_provider.dart';
 import '../routes.dart';
+import '../theme/detectoo_colors.dart';
+import '../theme/detectoo_text_styles.dart';
 import '../widgets/detectoo_button.dart';
+import '../widgets/eyebrow_label.dart';
 
 /// Login screen for the Detectoo application.
 ///
@@ -36,52 +39,33 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final isLoading = ref.watch(authProvider).isLoading;
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/login_bg.jpg'),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.black.withValues(alpha: 0.3),
-              colorScheme.surface.withValues(alpha: 0.85),
-              colorScheme.surface,
-            ],
-            stops: const [0.0, 0.45, 1.0],
-          ),
-        ),
+      backgroundColor: DetectooColors.canvasCream,
+      body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
+              constraints: const BoxConstraints(maxWidth: 420),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildBranding(colorScheme),
-                  const SizedBox(height: 48),
+                  _buildBranding(),
+                  const SizedBox(height: 40),
                   Form(
                     key: _formKey,
-                    child: _buildFormCard(colorScheme, isLoading: isLoading),
+                    child: _buildFormCard(isLoading: isLoading),
                   ),
                   const SizedBox(height: 24),
-                  _buildSignUpLink(colorScheme),
+                  Center(child: _buildSignUpLink()),
                 ],
               ),
             ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -94,10 +78,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
-    await ref.read(authProvider.notifier).signIn(
-          email: email,
-          password: password,
-        );
+    await ref
+        .read(authProvider.notifier)
+        .signIn(email: email, password: password);
 
     if (!mounted) return;
 
@@ -109,215 +92,141 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         }
       },
       error: (error, _) {
-        final message =
-            error is ApiException ? error.message : 'Login failed.';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message)),
-        );
+        final message = error is ApiException ? error.message : 'Login failed.';
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
       },
       loading: () {},
     );
   }
 
-  /// Builds the app logo and welcome text with decorative leaves.
-  Widget _buildBranding(ColorScheme colorScheme) {
+  /// Builds the app logo lockup and welcome header.
+  Widget _buildBranding() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Stack(
-          alignment: Alignment.center,
+        Row(
           children: [
-            // Outer glow ring
             Container(
-              width: 120,
-              height: 120,
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    colorScheme.primary.withValues(alpha: 0.15),
-                    colorScheme.primary.withValues(alpha: 0.0),
-                  ],
-                ),
-              ),
-            ),
-            // Logo container
-            Container(
-              width: 88,
-              height: 88,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    colorScheme.primary,
-                    const Color(0xFF00897B),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: colorScheme.primary.withValues(alpha: 0.3),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
+                color: DetectooColors.green600,
+                borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(
-                Icons.local_florist_rounded,
-                size: 44,
+                Icons.search_rounded,
+                size: 26,
                 color: Colors.white,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: 'detect',
+                    style: DetectooText.h2.copyWith(
+                      color: DetectooColors.green900,
+                    ),
+                  ),
+                  TextSpan(
+                    text: 'oo',
+                    style: DetectooText.h2.copyWith(
+                      color: DetectooColors.green500,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 32),
+        const EyebrowLabel('THE DIGITAL CURATOR'),
+        const SizedBox(height: 10),
+        Text('Welcome back,\nPlant Parent.', style: DetectooText.h1),
+        const SizedBox(height: 10),
         Text(
-          'Detectoo',
-          style: TextStyle(
-            fontFamily: 'Georgia',
-            fontSize: 34,
-            fontWeight: FontWeight.bold,
-            color: colorScheme.primary,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Keep your plants healthy',
-          style: TextStyle(
-            fontSize: 15,
-            color: colorScheme.onSurface.withValues(alpha: 0.5),
-          ),
+          'Sign in to continue caring for your specimens.',
+          style: DetectooText.body.copyWith(color: DetectooColors.textMuted),
         ),
       ],
     );
   }
 
   /// Builds the form card containing email, password, and login button.
-  Widget _buildFormCard(ColorScheme colorScheme, {required bool isLoading}) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.08),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          _buildEmailField(colorScheme),
-          const SizedBox(height: 16),
-          _buildPasswordField(colorScheme),
-          const SizedBox(height: 24),
-          DetectooButton(
-            label: isLoading ? 'Logging In…' : 'Log In',
-            height: 52,
-            color: colorScheme.secondary,
-            onPressed: isLoading ? () {} : _handleLogin,
-          ),
-        ],
-      ),
+  Widget _buildFormCard({required bool isLoading}) {
+    return Column(
+      children: [
+        _buildEmailField(),
+        const SizedBox(height: 16),
+        _buildPasswordField(),
+        const SizedBox(height: 28),
+        DetectooButton(
+          label: isLoading ? 'Logging in…' : 'Log In',
+          onPressed: isLoading ? null : _handleLogin,
+        ),
+      ],
     );
   }
 
   /// Builds the email input field with format validation.
-  Widget _buildEmailField(ColorScheme colorScheme) {
+  Widget _buildEmailField() {
     return TextFormField(
       controller: _emailController,
       keyboardType: TextInputType.emailAddress,
       autocorrect: false,
+      style: DetectooText.body,
       validator: (value) {
         final trimmed = (value ?? '').trim();
         if (trimmed.isEmpty) return 'Email is required.';
         if (!_isValidEmail(trimmed)) return 'Enter a valid email address.';
         return null;
       },
-      decoration: InputDecoration(
+      decoration: const InputDecoration(
         labelText: 'Email',
         hintText: 'you@example.com',
-        prefixIcon: Icon(Icons.email_outlined, color: colorScheme.primary),
-        filled: true,
-        fillColor: colorScheme.primaryContainer.withValues(alpha: 0.12),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: colorScheme.error, width: 1.5),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: colorScheme.error, width: 1.5),
-        ),
+        prefixIcon: Icon(Icons.mail_outline_rounded),
       ),
     );
   }
 
   /// Builds the password input field with visibility toggle.
-  Widget _buildPasswordField(ColorScheme colorScheme) {
+  Widget _buildPasswordField() {
     return TextField(
       controller: _passwordController,
       obscureText: _obscurePassword,
+      style: DetectooText.body,
       decoration: InputDecoration(
         labelText: 'Password',
-        prefixIcon:
-            Icon(Icons.lock_outline_rounded, color: colorScheme.primary),
+        prefixIcon: const Icon(Icons.lock_outline_rounded),
         suffixIcon: IconButton(
           icon: Icon(
             _obscurePassword
                 ? Icons.visibility_off_outlined
                 : Icons.visibility_outlined,
-            color: colorScheme.onSurface.withValues(alpha: 0.5),
+            color: DetectooColors.textMuted,
           ),
-          onPressed: () {
-            setState(() {
-              _obscurePassword = !_obscurePassword;
-            });
-          },
-        ),
-        filled: true,
-        fillColor: colorScheme.primaryContainer.withValues(alpha: 0.12),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
+          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
         ),
       ),
     );
   }
 
   /// Builds the sign-up link text.
-  Widget _buildSignUpLink(ColorScheme colorScheme) {
+  Widget _buildSignUpLink() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(
-          "Don't have an account? ",
-          style: TextStyle(
-            fontSize: 14,
-            color: colorScheme.onSurface.withValues(alpha: 0.5),
-          ),
-        ),
+        Text("Don't have an account? ", style: DetectooText.small),
         GestureDetector(
           onTap: () => Navigator.pushNamed(context, Routes.signUp),
           child: Text(
             'Sign Up',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: colorScheme.secondary,
+            style: DetectooText.small.copyWith(
+              color: DetectooColors.terracotta,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),

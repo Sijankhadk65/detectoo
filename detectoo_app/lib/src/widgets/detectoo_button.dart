@@ -1,132 +1,144 @@
 import 'package:flutter/material.dart';
 
-/// A full-width action button with consistent Detectoo styling.
+import '../theme/detectoo_colors.dart';
+import '../theme/detectoo_text_styles.dart';
+
+/// The visual variant of a [DetectooButton].
+enum DetectooButtonVariant {
+  /// Solid green-600 fill, white label. The default primary action.
+  primary,
+
+  /// Solid terracotta fill, white label. For AI/attention actions.
+  accent,
+
+  /// Transparent fill with a green-300 outline and green-700 label.
+  ghost,
+}
+
+/// A full-width pill-shaped action button with Detectoo styling.
 ///
-/// Supports both filled (gradient) and outlined variants.
-/// Filled buttons use a gradient background with a colored shadow
-/// for a modern, eye-catching look. Used for primary actions like
-/// "Log In", "Add to My Plants", "Start Recovery Plan", etc.
-class DetectooButton extends StatelessWidget {
+/// Matches the design system's `.ds-btn` family: pill radius, bold display
+/// label, solid fills for [DetectooButtonVariant.primary] /
+/// [DetectooButtonVariant.accent], and an outlined
+/// [DetectooButtonVariant.ghost]. Presses scale the button to 0.97 with no
+/// hue change, per the brand's quiet interaction style.
+class DetectooButton extends StatefulWidget {
   /// The button label text.
   final String label;
 
   /// Optional leading icon.
   final IconData? icon;
 
-  /// Called when the button is pressed.
-  final VoidCallback onPressed;
+  /// Called when the button is pressed. When null, the button is disabled.
+  final VoidCallback? onPressed;
 
-  /// Whether to use the outlined style. Defaults to false (filled).
-  final bool outlined;
+  /// The button variant. Defaults to [DetectooButtonVariant.primary].
+  final DetectooButtonVariant variant;
 
-  /// The button height. Defaults to 50.
+  /// The button height. Defaults to 52.
   final double height;
 
-  /// Optional custom foreground color for outlined buttons,
-  /// or base color for filled button gradient.
+  /// Optional override for the fill (solid variants) or outline/label
+  /// (ghost variant). When null, the variant's brand color is used.
   final Color? color;
+
+  /// Whether the button stretches to fill its parent width. Defaults to true.
+  final bool fullWidth;
 
   const DetectooButton({
     super.key,
     required this.label,
     required this.onPressed,
     this.icon,
-    this.outlined = false,
-    this.height = 50,
+    this.variant = DetectooButtonVariant.primary,
+    this.height = 52,
     this.color,
+    this.fullWidth = true,
   });
+
+  /// Convenience constructor for the outlined/ghost variant, kept for
+  /// call sites that used the previous `outlined: true` API.
+  const DetectooButton.ghost({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.icon,
+    this.height = 52,
+    this.color,
+    this.fullWidth = true,
+  }) : variant = DetectooButtonVariant.ghost;
+
+  @override
+  State<DetectooButton> createState() => _DetectooButtonState();
+}
+
+class _DetectooButtonState extends State<DetectooButton> {
+  bool _pressed = false;
+
+  void _setPressed(bool value) {
+    if (widget.onPressed == null) return;
+    setState(() => _pressed = value);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final effectiveColor = color ?? colorScheme.primary;
+    final isGhost = widget.variant == DetectooButtonVariant.ghost;
+    final enabled = widget.onPressed != null;
 
-    if (outlined) {
-      return SizedBox(
-        width: double.infinity,
-        height: height,
-        child: icon != null
-            ? OutlinedButton.icon(
-                onPressed: onPressed,
-                icon: Icon(icon),
-                label: Text(label),
-                style: _outlinedStyle(effectiveColor),
-              )
-            : OutlinedButton(
-                onPressed: onPressed,
-                style: _outlinedStyle(effectiveColor),
-                child: Text(label),
-              ),
-      );
-    }
+    final Color fill = switch (widget.variant) {
+      DetectooButtonVariant.primary => widget.color ?? DetectooColors.green600,
+      DetectooButtonVariant.accent => widget.color ?? DetectooColors.terracotta,
+      DetectooButtonVariant.ghost => Colors.transparent,
+    };
+    final Color foreground = isGhost
+        ? (widget.color ?? DetectooColors.green700)
+        : Colors.white;
 
-    // Filled variant: gradient container wrapping an invisible button.
-    return Container(
-      width: double.infinity,
-      height: height,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-          colors: [
-            effectiveColor,
-            HSLColor.fromColor(effectiveColor)
-                .withHue(
-                    (HSLColor.fromColor(effectiveColor).hue + 12) % 360)
-                .withSaturation(
-                    (HSLColor.fromColor(effectiveColor).saturation * 0.9)
-                        .clamp(0.0, 1.0))
-                .toColor(),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: effectiveColor.withValues(alpha: 0.35),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
+    final content = Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (widget.icon != null) ...[
+          Icon(widget.icon, color: foreground, size: 20),
+          const SizedBox(width: 8),
         ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(14),
-          child: Center(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (icon != null) ...[
-                  Icon(icon, color: Colors.white, size: 20),
-                  const SizedBox(width: 8),
-                ],
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
+        Text(
+          widget.label,
+          style: DetectooText.bodyStrong.copyWith(color: foreground),
+        ),
+      ],
+    );
+
+    return AnimatedScale(
+      scale: _pressed ? 0.97 : 1.0,
+      duration: const Duration(milliseconds: 120),
+      curve: Curves.easeOut,
+      child: Opacity(
+        opacity: enabled ? 1 : 0.5,
+        child: Material(
+          color: fill,
+          borderRadius: BorderRadius.circular(DetectooRadii.pill),
+          child: InkWell(
+            onTap: widget.onPressed,
+            onTapDown: (_) => _setPressed(true),
+            onTapUp: (_) => _setPressed(false),
+            onTapCancel: () => _setPressed(false),
+            borderRadius: BorderRadius.circular(DetectooRadii.pill),
+            child: Container(
+              width: widget.fullWidth ? double.infinity : null,
+              height: widget.height,
+              alignment: Alignment.center,
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(DetectooRadii.pill),
+                border: isGhost
+                    ? Border.all(color: widget.color ?? DetectooColors.green300)
+                    : null,
+              ),
+              child: content,
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  ButtonStyle _outlinedStyle(Color foreground) {
-    return OutlinedButton.styleFrom(
-      foregroundColor: foreground,
-      side: BorderSide(color: foreground, width: 1.2),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-      ),
-      textStyle: const TextStyle(
-        fontSize: 15,
-        fontWeight: FontWeight.w600,
       ),
     );
   }

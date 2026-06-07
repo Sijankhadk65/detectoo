@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/api/api_exception.dart';
 import '../providers/auth_provider.dart';
+import '../theme/detectoo_colors.dart';
+import '../theme/detectoo_text_styles.dart';
 
 /// A warning banner shown when the signed-in user has not yet verified
 /// their email address.
@@ -61,9 +63,9 @@ class _VerificationBannerState extends ConsumerState<VerificationBanner> {
       });
     } on ApiException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -114,33 +116,29 @@ class _VerificationBannerState extends ConsumerState<VerificationBanner> {
       return const SizedBox.shrink();
     }
 
-    final colorScheme = Theme.of(context).colorScheme;
-    final accent = colorScheme.secondary;
+    const accent = DetectooColors.terracotta;
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+      margin: const EdgeInsets.fromLTRB(24, 12, 24, 0),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: accent.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: accent.withValues(alpha: 0.3)),
+        color: DetectooColors.terracottaBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: DetectooColors.terracottaSoft),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.mark_email_unread_outlined, size: 20, color: accent),
+              const Icon(
+                Icons.mark_email_unread_outlined,
+                size: 20,
+                color: accent,
+              ),
               const SizedBox(width: 10),
               Expanded(
-                child: Text(
-                  'Verify your email',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
+                child: Text('Verify your email.', style: DetectooText.h3),
               ),
             ],
           ),
@@ -148,11 +146,7 @@ class _VerificationBannerState extends ConsumerState<VerificationBanner> {
           Text(
             "We sent a verification link to ${user.email}. "
             'Open it to activate your account.',
-            style: TextStyle(
-              fontSize: 13,
-              height: 1.5,
-              color: colorScheme.onSurface.withValues(alpha: 0.65),
-            ),
+            style: DetectooText.small,
           ),
           const SizedBox(height: 12),
           Row(
@@ -184,16 +178,16 @@ class _VerificationBannerState extends ConsumerState<VerificationBanner> {
               TextButton(
                 onPressed: _isRefreshing ? null : _refresh,
                 style: TextButton.styleFrom(
-                  foregroundColor: colorScheme.primary,
+                  foregroundColor: DetectooColors.green600,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                 ),
                 child: _isRefreshing
-                    ? SizedBox(
+                    ? const SizedBox(
                         width: 16,
                         height: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: colorScheme.primary,
+                          color: DetectooColors.green600,
                         ),
                       )
                     : const Text(

@@ -30,14 +30,20 @@ detectoo_app
 │   │   │   ├── task.dart          # Task/todo item with due date
 │   │   │   └── user.dart          # User profile model
 │   │   ├── providers/             # Riverpod providers for state management
+│   │   ├── theme/                 # Design system tokens + ThemeData
+│   │   │   ├── detectoo_colors.dart      # DetectooColors / DetectooRadii / DetectooShadows
+│   │   │   ├── detectoo_text_styles.dart # DetectooText (Plus Jakarta Sans + Nunito)
+│   │   │   └── detectoo_theme.dart       # detectooTheme() — wired into app.dart
 │   │   ├── widgets/
-│   │   │   ├── bottom_nav_bar.dart  # Bottom navigation shell (Home, Plants, Scan, Profile tabs)
-│   │   │   ├── detectoo_button.dart # Reusable full-width elevated/outlined button
-│   │   │   ├── detectoo_card.dart   # Reusable bordered card container
-│   │   │   ├── gradient_banner.dart # Reusable gradient header banner with decorative elements
-│   │   │   ├── icon_badge.dart      # Reusable icon in a rounded colored container
-│   │   │   ├── section_title.dart   # Reusable section heading with icon
-│   │   │   └── status_chip.dart     # Reusable pill-shaped colored status badge
+│   │   │   ├── bottom_nav_bar.dart  # Floating capsule nav (Home, Plants, raised SCAN, Profile)
+│   │   │   ├── detectoo_button.dart # Pill button: primary / accent / ghost variants
+│   │   │   ├── detectoo_card.dart   # Card with variant: white / cream / dark
+│   │   │   ├── eyebrow_label.dart   # UPPERCASE tracked terracotta (or green) eyebrow label
+│   │   │   ├── gradient_banner.dart # Deep-forest dark-surface hero banner
+│   │   │   ├── icon_badge.dart      # Icon in a rounded tinted tile
+│   │   │   ├── section_title.dart   # Section heading: IconBadge + H3 title
+│   │   │   ├── status_chip.dart     # Pill badge: quiet green or terracotta accent
+│   │   │   └── verification_banner.dart # Soft terracotta "verify your email" banner
 │   │   └── screens/
 │   │       ├── splash_screen.dart       # Animated splash screen with staggered animations
 │   │       ├── login_screen.dart        # App login screen
@@ -96,7 +102,8 @@ dart run build_runner watch --delete-conflicting-outputs
 - `IconData` fields are not serializable — store as `int iconCodePoint` and provide a `@BuiltValueField(serialize: false)` getter that returns `IconData(iconCodePoint, fontFamily: 'MaterialIcons')`
 - Enums that need serialization should use `EnumClass` from `built_value`. UI-specific properties (labels, colors) should be added via extensions rather than stored in the enum itself
 - All Riverpod providers must be placed in `lib/src/providers/`
-- Reusable UI components must be placed in `lib/src/widgets/`. Before creating inline widget builders in screens, check if an existing reusable widget can be used (e.g., `SectionTitle`, `DetectooCard`, `IconBadge`, `StatusChip`, `DetectooButton`)
+- Reusable UI components must be placed in `lib/src/widgets/`. Before creating inline widget builders in screens, check if an existing reusable widget can be used (e.g., `EyebrowLabel`, `SectionTitle`, `DetectooCard`, `IconBadge`, `StatusChip`, `DetectooButton`)
+- Use design tokens from `lib/src/theme/` (`DetectooColors`, `DetectooText`, `DetectooRadii`, `DetectooShadows`) instead of hardcoding colors, fonts, radii, or shadows. The cream canvas + monochrome-green + single-terracotta-accent palette and the Plus Jakarta Sans / Nunito type pairing are mandatory — see [DESIGN.md](DESIGN.md)
 
 ## Design
 
